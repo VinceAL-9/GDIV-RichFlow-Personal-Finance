@@ -1,5 +1,6 @@
 .income-container {
-  background-color: #0f0f0f;
+  background-color: #1a1a1a;
+  border-radius: 8px;
   color: white;
   min-height: 100vh;
   padding: 40px;
@@ -26,7 +27,7 @@
 }
 
 .income-card {
-  background-color: #1a1a1a;
+  background-color: #0f0f0f;
   border-radius: 10px;
   padding: 20px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
