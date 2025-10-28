@@ -1,0 +1,84 @@
+.income-section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.section-header {
+  background: linear-gradient(135deg, #7345AF 0%, #9d6dd4 100%);
+  padding: 1rem 2rem;
+  border-radius: 8px 8px 0 0;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #000000;
+  text-align: center;
+}
+
+.income-content {
+  flex: 1;
+  background-color: #1E1E1E;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  border-radius: 0 0 8px 8px;
+}
+
+.income-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #1E1E1E;
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-height: min-content;
+}
+
+
+.income-box-header {
+  background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  width: auto;
+  text-align: center;
+
+}
+
+.income-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.income-secondary {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  min-height: 0;
+}
+
+.income-box-small {
+  background-color: #1E1E1E;
+  padding: 1.5rem;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-height: min-content;
+}
+
+.income-box-small-header {
+  background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  width: 100%;
+  display: inline-block;
+  text-align: center;
+}
