@@ -79,3 +79,31 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 12px 30px rgba(115, 69, 175, 0.5);
 }
 
+/* Custom Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-dark);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--color-purple) 0%, var(--color-gold) 100%);
+  border-radius: 10px;
+  border: 2px solid var(--color-dark);
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--color-gold) 0%, var(--color-purple) 100%);
+  border: 2px solid rgba(237, 202, 105, 0.3);
+}
+
+/* Firefox Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-purple) var(--color-dark);
+}
+

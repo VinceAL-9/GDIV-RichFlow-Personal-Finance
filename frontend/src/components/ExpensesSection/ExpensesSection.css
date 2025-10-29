@@ -1,92 +1,139 @@
 .expense-container {
-  background-color: #0d0d0d;
-  min-height: 100vh;
+  background-color: transparent;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: start;
-  padding-top: 3rem;
   color: white;
   font-family: "Inter", sans-serif;
 }
 
 .expense-header {
-  background-color: #7c3aed;
-  padding: 1rem 4rem;
+  background: linear-gradient(135deg, #7345AF 0%, #9d6dd4 100%);
+  padding: 0.75rem 1.5rem;
   border-radius: 12px;
-  font-size: 1.75rem;
-  font-weight: 600;
+  font-size: 1.5rem;
+  font-weight: 700;
   text-align: center;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 12px rgba(115, 69, 175, 0.3);
 }
 
 .expense-card {
-  background-color: #111;
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
   border-radius: 16px;
-  width: 400px;
-  margin-top: 2rem;
   padding: 1.5rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.expense-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(157, 109, 212, 0.2);
 }
 
 .expense-title {
-  background-color: #ede9fe;
-  color: #111;
+  background: linear-gradient(135deg, #9d6dd4 0%, #b794e0 100%);
+  color: #ffffff;
   padding: 0.75rem;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: 10px;
+  font-weight: 700;
   text-align: center;
   margin-bottom: 1rem;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 8px rgba(157, 109, 212, 0.3);
 }
 
 .expense-empty {
   text-align: center;
-  color: #aaa;
+  color: #888;
   font-style: italic;
-  margin: 1rem 0;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
 }
 
 .expense-list {
   list-style: none;
   padding: 0;
   margin-bottom: 1rem;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 250px;
+  padding-right: 0.5rem;
+}
+
+/* Scrollbar for expense list */
+.expense-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.expense-list::-webkit-scrollbar-track {
+  background: #0f0f0f;
+  border-radius: 10px;
+}
+
+.expense-list::-webkit-scrollbar-thumb {
+  background: #9d6dd4;
+  border-radius: 10px;
 }
 
 .expense-list li {
   display: flex;
   justify-content: space-between;
   padding: 0.5rem 0;
-  border-bottom: 1px solid #222;
+  border-bottom: 1px solid #2a2a2a;
 }
 
 .expense-inputs {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.75rem;
   margin-bottom: 1rem;
 }
 
 .expense-inputs input {
   flex: 1;
-  background-color: #222;
-  border: none;
-  padding: 0.6rem;
-  border-radius: 6px;
+  background-color: #0f0f0f;
+  border: 1px solid #2a2a2a;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
   color: white;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.expense-inputs input:focus {
+  border-color: #9d6dd4;
+  box-shadow: 0 0 0 2px rgba(157, 109, 212, 0.2);
+}
+
+.expense-inputs input::placeholder {
+  color: #666;
 }
 
 .add-expense-btn {
   width: 100%;
-  background: linear-gradient(to right, #8b5cf6, #fbbf24);
+  background: linear-gradient(135deg, #7345AF 0%, #9d6dd4 100%);
   border: none;
   border-radius: 10px;
   padding: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   color: white;
-  transition: opacity 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
+  font-size: 0.95rem;
 }
 
 .add-expense-btn:hover {
-  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(157, 109, 212, 0.4);
+}
+
+.add-expense-btn:active {
+  transform: translateY(0);
 }
 
 .expense-sections {
@@ -101,50 +148,42 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #222;
-  padding: 0.5rem 0;
+  border-bottom: 1px solid #2a2a2a;
+  padding: 0.75rem 0.5rem;
+  font-size: 0.95rem;
+  transition: background-color 0.2s;
+}
+
+.expense-item:hover {
+  background-color: rgba(157, 109, 212, 0.1);
+  border-radius: 6px;
+}
+
+.expense-item span:first-child {
+  flex: 1;
+  font-weight: 500;
+  color: white;
 }
 
 .expense-amount {
-  color: #fbbf24;
-  margin: 0 0.5rem;
+  color: #b794e0;
+  margin: 0 0.75rem;
+  font-weight: 600;
+  font-size: 1rem;
 }
 
 .delete-btn {
   background: none;
   border: none;
-  color: #f87171;
-  font-size: 1rem;
+  color: #b794e0;
+  font-size: 1.1rem;
   cursor: pointer;
-  transition: color 0.2s;
+  transition: all 0.2s;
+  padding: 0.25rem;
+  border-radius: 4px;
 }
 
 .delete-btn:hover {
-  color: #ef4444;
-}
-
-.expense-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #222;
-  padding: 0.5rem 0;
-}
-
-.expense-amount {
-  color: #fb2424;
-  margin: 0 0.5rem;
-}
-
-.delete-btn {
-  background: none;
-  border: none;
-  color: #f87171;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.delete-btn:hover {
-  color: #ef4444;
+  color: #9d6dd4;
+  background-color: rgba(157, 109, 212, 0.1);
 }
