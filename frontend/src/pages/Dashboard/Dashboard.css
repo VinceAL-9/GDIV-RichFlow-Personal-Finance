@@ -1,7 +1,9 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@import "tailwindcss";
+
+@theme inline {
+  --color-dark: #1E1E1E;
+  --color-gold: #EDCA69;
+  --color-purple: #7345AF;
 }
 
 html, body {

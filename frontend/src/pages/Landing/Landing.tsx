@@ -1,8 +1,10 @@
 import React from 'react';
 import './Landing.css';
+import { useNavigate } from 'react-router-dom';
 
 
 const Landing: React.FC = () => {
+  const navigate = useNavigate();
   return (
     <div className="text-white" style={{ background: 'linear-gradient(to bottom right, #7345AF, #7345AF, #1E1E1E, #000000)', minHeight: '100vh' }}>
       {/* Header */}
@@ -17,10 +19,10 @@ const Landing: React.FC = () => {
           
           {/* Navigation */}
           <nav className="flex gap-4">
-            <button className="bg-purple text-gold px-8 py-3 rounded-2xl font-bold text-xl hover:bg-opacity-90 transition btn-hover-effect">
+            <button onClick={() => navigate('/login')} className="bg-purple text-gold px-8 py-3 rounded-2xl font-bold text-xl hover:bg-opacity-90 transition btn-hover-effect">
               Log in
             </button>
-            <button className="bg-purple text-gold px-8 py-3 rounded-2xl font-bold text-xl hover:bg-opacity-90 transition btn-hover-effect">
+            <button onClick={() => navigate('/signup')} className="bg-purple text-gold px-8 py-3 rounded-2xl font-bold text-xl hover:bg-opacity-90 transition btn-hover-effect">
               Sign up
             </button>
           </nav>
@@ -41,7 +43,7 @@ const Landing: React.FC = () => {
           </p>
           
           {/* CTA Button */}
-            <button 
+            <button onClick={() => navigate('/dashboard')}
             className="text-gold px-12 py-5 rounded-2xl ctext-3xl font-bold hover:bg-opacity-80 transition shadow-lg cta-button"
             style={{ background: 'linear-gradient(to bottom right, #7345AF, #7345AF, #1E1E1E, #000000)' }}
             >
