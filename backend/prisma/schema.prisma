@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client-ts"
 }
 
 datasource db {
@@ -8,14 +8,14 @@ datasource db {
 }
 
 model User {
-  id               Int               @id @default(autoincrement())
-  email            String            @unique
-  password         String
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  balanceSheets    BalanceSheet[]
-  incomeStatements IncomeStatement[]
-  sessions         Session[]
+  id              Int               @id @default(autoincrement())
+  email           String            @unique
+  password        String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime
+  BalanceSheet    BalanceSheet[]
+  IncomeStatement IncomeStatement[]
+  Session         Session[]
 }
 
 model Session {
@@ -25,15 +25,39 @@ model Session {
   createdAt DateTime @default(now())
   isValid   Boolean  @default(true)
   userId    Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model IncomeStatement {
-  id       Int          @id @default(autoincrement())
-  userId   Int
-  expenses Expense[]
-  incomes  IncomeLine[]
-  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Expense {
+  id              Int             @id @default(autoincrement())
+  name            String
+  amount          Float
+  isId            Int
+  IncomeStatement IncomeStatement @relation(fields: [isId], references: [id], onDelete: Cascade)
+}
+
+model Asset {
+  id           Int          @id @default(autoincrement())
+  name         String
+  value        Float
+  bsId         Int
+  BalanceSheet BalanceSheet @relation(fields: [bsId], references: [id], onDelete: Cascade)
+}
+
+model Liability {
+  id           Int          @id @default(autoincrement())
+  name         String
+  value        Float
+  bsId         Int
+  BalanceSheet BalanceSheet @relation(fields: [bsId], references: [id], onDelete: Cascade)
+}
+
+model BalanceSheet {
+  id        Int         @id @default(autoincrement())
+  userId    Int
+  Asset     Asset[]
+  User      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Liability Liability[]
 }
 
 model IncomeLine {
@@ -42,37 +66,13 @@ model IncomeLine {
   amount          Float
   type            String
   isId            Int
-  incomeStatement IncomeStatement @relation(fields: [isId], references: [id], onDelete: Cascade)
+  IncomeStatement IncomeStatement @relation(fields: [isId], references: [id], onDelete: Cascade)
 }
 
-model Expense {
-  id              Int             @id @default(autoincrement())
-  name            String
-  amount          Float
-  isId            Int
-  incomeStatement IncomeStatement @relation(fields: [isId], references: [id], onDelete: Cascade)
-}
-
-model BalanceSheet {
-  id          Int         @id @default(autoincrement())
-  userId      Int
-  assets      Asset[]
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  liabilities Liability[]
-}
-
-model Asset {
-  id           Int          @id @default(autoincrement())
-  name         String
-  value        Float
-  bsId         Int
-  balanceSheet BalanceSheet @relation(fields: [bsId], references: [id], onDelete: Cascade)
-}
-
-model Liability {
-  id           Int          @id @default(autoincrement())
-  name         String
-  value        Float
-  bsId         Int
-  balanceSheet BalanceSheet @relation(fields: [bsId], references: [id], onDelete: Cascade)
+model IncomeStatement {
+  id         Int          @id @default(autoincrement())
+  userId     Int
+  Expense    Expense[]
+  IncomeLine IncomeLine[]
+  User       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
