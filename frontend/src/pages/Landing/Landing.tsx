@@ -2,7 +2,6 @@ import React from 'react';
 import './Landing.css';
 import { useNavigate } from 'react-router-dom';
 
-
 const Landing: React.FC = () => {
   const navigate = useNavigate();
   return (
