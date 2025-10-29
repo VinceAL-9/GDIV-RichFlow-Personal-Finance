@@ -35,7 +35,6 @@ const ExpenseSection: React.FC = () => {
       <h1 className="expense-header">Expenses</h1>
 
       <div className="expense-card">
-        <div className="expense-title">Expense List</div>
 
         {expenses.length === 0 ? (
           <p className="expense-empty">No expenses added yet.</p>
