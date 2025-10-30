@@ -31,6 +31,17 @@ export async function findExistingUser(email: string, name: string) {
 }
 
 /**
+ * Find a user by their email address
+ * @param email - User email
+ * @returns User or null
+ */
+export async function findUserByEmail(email: string) {
+  return await prisma.user.findUnique({
+    where: { email }
+  });
+}
+
+/**
  * Create a new user in the database
  * @param userData - User registration data
  * @returns Created user (without password)
@@ -52,7 +63,7 @@ export async function createUser(userData: CreateUserData): Promise<UserResponse
       email: true,
       createdAt: true,
       updatedAt: true,
-      lastLogin: true,
+      lastLogin: true
     }
   });
 
