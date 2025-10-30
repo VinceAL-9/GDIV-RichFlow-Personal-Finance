@@ -1,19 +1,24 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { signup } from './signup/route';
+import routes from './routes';
+import { errorHandler } from './middleware/errorHandler.middleware';
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000
+;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
 // Routes
-app.post('/api/auth/signup', signup);
+app.use('/api', routes);
+
+// Error handling middleware (must be last)
+app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {
