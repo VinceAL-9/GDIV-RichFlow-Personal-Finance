@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-ts"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -9,10 +9,12 @@ datasource db {
 
 model User {
   id              Int               @id @default(autoincrement())
+  name            String            @unique
   email           String            @unique
   password        String
   createdAt       DateTime          @default(now())
   updatedAt       DateTime
+  lastLogin       DateTime?          
   BalanceSheet    BalanceSheet[]
   IncomeStatement IncomeStatement[]
   Session         Session[]

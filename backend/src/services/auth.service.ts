@@ -1,3 +1,14 @@
+
+/**
+ * Find a user by their email address
+ * @param email - User email
+ * @returns User or null
+ */
+export async function findUserByEmail(email: string) {
+  return await prisma.user.findUnique({
+    where: { email }
+  });
+}
 import prisma from '../config/database.config';
 import { hashPassword } from '../utils/password.utils';
 
@@ -45,14 +56,6 @@ export async function createUser(userData: CreateUserData): Promise<UserResponse
       password: hashedPassword,
       updatedAt: new Date(),
       lastLogin: null
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      createdAt: true,
-      updatedAt: true,
-      lastLogin: true,
     }
   });
 
