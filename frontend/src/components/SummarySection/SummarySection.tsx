@@ -209,7 +209,7 @@ const SummarySection: React.FC<Props> = ({
                   onClick={handleEditClick}
                   aria-label="Edit cash savings"
                 >
-                  ✏️
+                  Edit
                 </button>
               )}
             </>
