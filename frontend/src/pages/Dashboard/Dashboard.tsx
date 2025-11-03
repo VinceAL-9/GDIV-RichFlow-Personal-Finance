@@ -15,7 +15,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     // Only redirect if loading is complete and user is not authenticated
     if (!loading && !isAuthenticated) {
-      navigate('/login');
+      navigate('/'); // go to Landing instead of Login
     }
   }, [isAuthenticated, loading, navigate]);
 
