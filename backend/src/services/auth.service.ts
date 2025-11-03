@@ -50,7 +50,7 @@ export async function findUserByEmail(email: string) {
 export async function createUser(userData: CreateUserData): Promise<UserResponse> {
   const hashedPassword = await hashPassword(userData.password);
 
-  // Use a transaction to create user and income statement together
+  // Use a transaction to create user, income statement, and cash savings together
   const user = await prisma.$transaction(async (tx) => {
     // Create the user
     const newUser = await tx.user.create({
@@ -75,6 +75,14 @@ export async function createUser(userData: CreateUserData): Promise<UserResponse
     await tx.incomeStatement.create({
       data: {
         userId: newUser.id
+      }
+    });
+
+    // Automatically create a cash savings record with default amount of 0
+    await tx.cashSavings.create({
+      data: {
+        userId: newUser.id,
+        amount: 0
       }
     });
 

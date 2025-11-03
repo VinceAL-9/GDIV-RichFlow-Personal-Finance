@@ -15,9 +15,10 @@ model User {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime
   lastLogin       DateTime?          
-  BalanceSheet    BalanceSheet[]
-  IncomeStatement IncomeStatement[]
+  BalanceSheet    BalanceSheet?
+  IncomeStatement IncomeStatement?
   Session         Session[]
+  CashSavings     CashSavings?
 }
 
 model Session {
@@ -56,7 +57,7 @@ model Liability {
 
 model BalanceSheet {
   id        Int         @id @default(autoincrement())
-  userId    Int
+  userId    Int         @unique
   Asset     Asset[]
   User      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   Liability Liability[]
@@ -73,8 +74,16 @@ model IncomeLine {
 
 model IncomeStatement {
   id         Int          @id @default(autoincrement())
-  userId     Int
+  userId     Int          @unique
   Expense    Expense[]
   IncomeLine IncomeLine[]
   User       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+model CashSavings {
+  id        Int        @id @default(autoincrement())
+  amount    Float      @default (0)
+  userId    Int        @unique
+  User      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

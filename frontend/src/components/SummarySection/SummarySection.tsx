@@ -1,19 +1,91 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { cashSavingsAPI } from '../../utils/api';
 import './SummarySection.css';
 
 type Props = {
   passiveIncome?: number;
   totalExpenses?: number;
-  cashSavings?: number;
   totalIncome?: number; // new prop for display
 };
 
 const SummarySection: React.FC<Props> = ({
   passiveIncome = 1200,
   totalExpenses = 5000,
-  cashSavings = 10000,
   totalIncome = 8000, // default placeholder, backend will replace
 }) => {
+  const [cashSavings, setCashSavings] = useState<number>(0);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState<string>('0');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch cash savings on component mount
+  useEffect(() => {
+    fetchCashSavings();
+  }, []);
+
+  const fetchCashSavings = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await cashSavingsAPI.getCashSavings();
+      setCashSavings(response.amount || 0);
+      setEditValue((response.amount || 0).toString());
+    } catch (err: any) {
+      console.error('Error fetching cash savings:', err);
+      setError('Failed to load cash savings');
+      setCashSavings(0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+    setEditValue(cashSavings.toString());
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditValue(cashSavings.toString());
+    setError(null);
+  };
+
+  const handleSaveClick = async () => {
+    const numValue = parseFloat(editValue);
+    
+    if (isNaN(numValue) || numValue < 0) {
+      setError('Please enter a valid positive number');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setError(null);
+      const response = await cashSavingsAPI.updateCashSavings(numValue);
+      setCashSavings(response.cashSavings.amount);
+      setIsEditing(false);
+    } catch (err: any) {
+      console.error('Error updating cash savings:', err);
+      setError(err.message || 'Failed to update cash savings');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditValue(e.target.value);
+    setError(null);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSaveClick();
+    } else if (e.key === 'Escape') {
+      handleCancelEdit();
+    }
+  };
   // compute percentage (clamp between 0 and 100)
   const percent = Math.min(
     100,
@@ -125,8 +197,59 @@ const SummarySection: React.FC<Props> = ({
       {/* Bottom savings row */}
       <div className="savings-bar">
         <span className="savings-label">Cash / Savings</span>
-        <span className="savings-amount">${cashSavings.toLocaleString()}</span>
+        <div className="savings-edit-container">
+          {!isEditing ? (
+            <>
+              <span className="savings-amount">
+                {loading ? 'Loading...' : `$${cashSavings.toLocaleString()}`}
+              </span>
+              {!loading && (
+                <button 
+                  className="edit-button" 
+                  onClick={handleEditClick}
+                  aria-label="Edit cash savings"
+                >
+                  ✏️
+                </button>
+              )}
+            </>
+          ) : (
+            <div className="savings-edit-form">
+              <input
+                type="number"
+                className="savings-input"
+                value={editValue}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                placeholder="0"
+                min="0"
+                step="0.01"
+                autoFocus
+                disabled={saving}
+              />
+              <button 
+                className="save-button" 
+                onClick={handleSaveClick}
+                disabled={saving}
+              >
+                {saving ? '...' : '✓'}
+              </button>
+              <button 
+                className="cancel-button" 
+                onClick={handleCancelEdit}
+                disabled={saving}
+              >
+                ✕
+              </button>
+            </div>
+          )}
+        </div>
       </div>
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
     </section>
   );
 };

@@ -10,7 +10,6 @@ import {
 } from '../services/auth.service';
 import { generateAccessToken } from '../utils/jwt.utils';
 import prisma from '../config/database.config';
-import jwt from 'jsonwebtoken';
 
 /**
  * Handle user signup
