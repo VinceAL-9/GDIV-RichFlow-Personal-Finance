@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { incomeAPI } from "../../utils/api";
 import "./IncomeSection.css";
+import { passiveIncomeStore } from "../../state/passiveIncomeStore";
+import { incomeTotalsStore } from "../../state/incomeTotalsStore";
 
 interface IncomeItem {
   id: number;
@@ -59,6 +61,13 @@ const IncomeSection: React.FC = () => {
       setEarnedIncome(earned);
       setPortfolioIncome(portfolio);
       setPassiveIncome(passive);
+      // Update shared passive income total
+      const passiveTotal = passive.reduce((sum, item) => sum + item.amount, 0);
+      passiveIncomeStore.set(passiveTotal);
+      // Update income totals store
+      const earnedTotal = earned.reduce((sum, item) => sum + item.amount, 0);
+      const portfolioTotal = portfolio.reduce((sum, item) => sum + item.amount, 0);
+      incomeTotalsStore.replace({ earned: earnedTotal, portfolio: portfolioTotal, passive: passiveTotal });
     } catch (err: any) {
       console.error('Error fetching income:', err);
       setError('Failed to load income data');
@@ -66,6 +75,8 @@ const IncomeSection: React.FC = () => {
       setEarnedIncome([]);
       setPortfolioIncome([]);
       setPassiveIncome([]);
+      passiveIncomeStore.set(0);
+      incomeTotalsStore.replace({ earned: 0, portfolio: 0, passive: 0 });
     } finally {
       setLoading(false);
     }
@@ -94,9 +105,26 @@ const IncomeSection: React.FC = () => {
         type
       };
 
-      if (section === "earned") setEarnedIncome([...earnedIncome, newItem]);
-      if (section === "portfolio") setPortfolioIncome([...portfolioIncome, newItem]);
-      if (section === "passive") setPassiveIncome([...passiveIncome, newItem]);
+      if (section === "earned") {
+        const next = [...earnedIncome, newItem];
+        setEarnedIncome(next);
+        const earnedTotal = next.reduce((s, i) => s + i.amount, 0);
+        incomeTotalsStore.set({ earned: earnedTotal });
+      }
+      if (section === "portfolio") {
+        const next = [...portfolioIncome, newItem];
+        setPortfolioIncome(next);
+        const portfolioTotal = next.reduce((s, i) => s + i.amount, 0);
+        incomeTotalsStore.set({ portfolio: portfolioTotal });
+      }
+      if (section === "passive") {
+        const next = [...passiveIncome, newItem];
+        setPassiveIncome(next);
+        // Update shared passive income total
+        const passiveTotal = next.reduce((sum, item) => sum + item.amount, 0);
+        passiveIncomeStore.set(passiveTotal);
+        incomeTotalsStore.set({ passive: passiveTotal });
+      }
     } catch (err: any) {
       console.error('Error adding income:', err);
       setError('Failed to add income');
@@ -114,9 +142,26 @@ const IncomeSection: React.FC = () => {
       setError(null);
       await incomeAPI.deleteIncomeLine(id);
       
-      if (section === "earned") setEarnedIncome(earnedIncome.filter((i) => i.id !== id));
-      if (section === "portfolio") setPortfolioIncome(portfolioIncome.filter((i) => i.id !== id));
-      if (section === "passive") setPassiveIncome(passiveIncome.filter((i) => i.id !== id));
+      if (section === "earned") {
+        const next = earnedIncome.filter((i) => i.id !== id);
+        setEarnedIncome(next);
+        const earnedTotal = next.reduce((s, i) => s + i.amount, 0);
+        incomeTotalsStore.set({ earned: earnedTotal });
+      }
+      if (section === "portfolio") {
+        const next = portfolioIncome.filter((i) => i.id !== id);
+        setPortfolioIncome(next);
+        const portfolioTotal = next.reduce((s, i) => s + i.amount, 0);
+        incomeTotalsStore.set({ portfolio: portfolioTotal });
+      }
+      if (section === "passive") {
+        const next = passiveIncome.filter((i) => i.id !== id);
+        setPassiveIncome(next);
+        // Update shared passive income total
+        const passiveTotal = next.reduce((sum, item) => sum + item.amount, 0);
+        passiveIncomeStore.set(passiveTotal);
+        incomeTotalsStore.set({ passive: passiveTotal });
+      }
     } catch (err: any) {
       console.error('Error deleting income:', err);
       setError('Failed to delete income');

@@ -69,20 +69,11 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-<<<<<<< HEAD
-    // Generate JWT token and session expiry
-    const token = generateToken(foundUser.id);
-  // Dev-only: log the generated token so you can inspect it in server console
-  // WARNING: tokens are secrets — remove this log before deploying to production
-  console.log('[DEBUG] Generated token for user', foundUser.email, ':', token);
-    const expiresAt = generateSessionExpiry();
-=======
     // Generate tokens
     const accessToken = generateAccessToken({
       userId: user.id,
       email: user.email
     });
->>>>>>> 2899c9ecb9b9fb749d98407a604eb2fa31973d44
 
     // Create session with refresh token
     const session = await createSession(user.id);

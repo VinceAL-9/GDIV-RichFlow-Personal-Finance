@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { cashSavingsAPI } from '../../utils/api';
+import { useExpenses } from '../../hooks/useExpenses';
+import { cashSavingsAPI, incomeAPI } from '../../utils/api';
+import { passiveIncomeStore } from '../../state/passiveIncomeStore';
+import { incomeTotalsStore } from '../../state/incomeTotalsStore';
 import './SummarySection.css';
 
 type Props = {
@@ -9,9 +12,9 @@ type Props = {
 };
 
 const SummarySection: React.FC<Props> = ({
-  passiveIncome = 1200,
-  totalExpenses = 5000,
-  totalIncome = 8000, // default placeholder, backend will replace
+  passiveIncome = 0,
+  totalExpenses = 0,
+  totalIncome = 0, // default placeholder, backend will replace
 }) => {
   const [cashSavings, setCashSavings] = useState<number>(0);
   const [isEditing, setIsEditing] = useState(false);
@@ -19,10 +22,77 @@ const SummarySection: React.FC<Props> = ({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Passive income used for the progress block (fetched from IncomeSection data)
+  const [passiveIncomeProgress, setPassiveIncomeProgress] = useState<number>(0);
+  const [totalIncomeLive, setTotalIncomeLive] = useState<number>(0);
+
+  // Pull total expenses from backend via custom hook
+  const { totalExpenses: totalExpensesDb } = useExpenses();
 
   // Fetch cash savings on component mount
   useEffect(() => {
     fetchCashSavings();
+  }, []);
+
+  // Fetch passive income total initially and subscribe to store for live updates
+  useEffect(() => {
+    // Seed from store immediately
+    setPassiveIncomeProgress(passiveIncomeStore.get());
+
+    const unsub = passiveIncomeStore.subscribe(() => {
+      setPassiveIncomeProgress(passiveIncomeStore.get());
+    });
+
+    // Also fetch once to prime the store if needed
+    const fetchPassiveIncome = async () => {
+      try {
+        const response = await incomeAPI.getIncomeLines();
+        const incomeLines = Array.isArray(response) ? response : [];
+        const totalPassive = incomeLines
+          .filter((item: any) => item.type === 'Passive')
+          .reduce((sum: number, item: any) => sum + (typeof item.amount === 'number' ? item.amount : parseFloat(item.amount)), 0);
+        passiveIncomeStore.set(totalPassive || 0);
+      } catch (e) {
+        console.error('Error fetching passive income:', e);
+      }
+    };
+    fetchPassiveIncome();
+
+    return () => {
+      unsub();
+    };
+  }, []);
+
+  // Subscribe to total income totals for live updates
+  useEffect(() => {
+    // seed
+    setTotalIncomeLive(incomeTotalsStore.get().total);
+    const unsub = incomeTotalsStore.subscribe(() => {
+      setTotalIncomeLive(incomeTotalsStore.get().total);
+    });
+
+    // Also fetch once to prime the totals if IncomeSection hasn't yet
+    const fetchTotals = async () => {
+      try {
+        const response = await incomeAPI.getIncomeLines();
+        const lines = Array.isArray(response) ? response : [];
+        const earned = lines
+          .filter((i: any) => i.type === 'Earned')
+          .reduce((s: number, i: any) => s + (typeof i.amount === 'number' ? i.amount : parseFloat(i.amount)), 0);
+        const portfolio = lines
+          .filter((i: any) => i.type === 'Portfolio')
+          .reduce((s: number, i: any) => s + (typeof i.amount === 'number' ? i.amount : parseFloat(i.amount)), 0);
+        const passive = lines
+          .filter((i: any) => i.type === 'Passive')
+          .reduce((s: number, i: any) => s + (typeof i.amount === 'number' ? i.amount : parseFloat(i.amount)), 0);
+        incomeTotalsStore.replace({ earned, portfolio, passive });
+      } catch (e) {
+        // non-fatal
+      }
+    };
+    fetchTotals();
+
+    return () => { unsub(); };
   }, []);
 
   const fetchCashSavings = async () => {
@@ -43,7 +113,8 @@ const SummarySection: React.FC<Props> = ({
 
   const handleEditClick = () => {
     setIsEditing(true);
-    setEditValue(cashSavings.toString());
+    const currentNet = (totalIncomeLive || 0) - (totalExpensesDb || 0);
+    setEditValue(currentNet.toString());
   };
 
   const handleCancelEdit = () => {
@@ -86,24 +157,28 @@ const SummarySection: React.FC<Props> = ({
       handleCancelEdit();
     }
   };
-  // compute percentage (clamp between 0 and 100)
-  const percent = Math.min(
-    100,
-    Math.max(0, Math.round((passiveIncome / totalExpenses) * 100))
-  );
+  
+  // Net cash/savings = Total Income - Total Expenses (live values)
+  const netCash = (totalIncomeLive || 0) - (totalExpensesDb || 0);
+  // Percentage of passive income relative to TOTAL expenses from DB
+  const percent = (() => {
+    const expensesBase = totalExpensesDb; // use live DB-driven total expenses
+    if (!expensesBase || expensesBase <= 0) return 0;
+    const ratio = (passiveIncomeProgress || 0) / expensesBase;
+    return Math.min(100, Math.max(0, Math.round(ratio * 100)));
+  })();
 
   // New: compute cashflow and values for bar graph
-  const cashFlow = totalIncome - totalExpenses;
-  const absCashFlow = Math.abs(cashFlow);
+  const cashFlow = totalIncomeLive - totalExpenses;
 
   // Determine max for scaling bars (use income vs passive income)
-  const barMax = Math.max(totalIncome, passiveIncome, 1);
+  const barMax = Math.max(totalIncomeLive, passiveIncomeProgress, 1);
 
   const toBarPercent = (value: number) =>
     Math.round((value / barMax) * 100);
 
-  const incomeBarPercent = toBarPercent(totalIncome);
-  const passiveBarPercent = toBarPercent(passiveIncome);
+  const incomeBarPercent = toBarPercent(totalIncomeLive);
+  const passiveBarPercent = toBarPercent(passiveIncomeProgress);
 
   return (
     <section className="summary-section">
@@ -117,7 +192,7 @@ const SummarySection: React.FC<Props> = ({
           <div className="progress-header">
             <span className="progress-label">Passive income</span>
             <span className="progress-amount">
-              ${passiveIncome.toLocaleString()}
+              ${passiveIncomeProgress.toLocaleString()}
             </span>
           </div>
 
@@ -139,7 +214,7 @@ const SummarySection: React.FC<Props> = ({
           <div className="progress-footer">
             <span className="progress-percent">{percent}%</span>
             <span className="progress-target">
-              of ${totalExpenses.toLocaleString()} Total Expenses
+              of ${totalExpensesDb.toLocaleString()}
             </span>
           </div>
         </div>
@@ -161,7 +236,7 @@ const SummarySection: React.FC<Props> = ({
                   aria-hidden="true"
                 />
               </div>
-              <div className="hbar-value">${totalIncome.toLocaleString()}</div>
+              <div className="hbar-value">${totalIncomeLive.toLocaleString()}</div>
             </div>
 
             <div className="hbar">
@@ -177,7 +252,7 @@ const SummarySection: React.FC<Props> = ({
                   aria-hidden="true"
                 />
               </div>
-              <div className="hbar-value">${passiveIncome.toLocaleString()}</div>
+              <div className="hbar-value">${passiveIncomeProgress.toLocaleString()}</div>
             </div>
           </div>
 
@@ -185,8 +260,8 @@ const SummarySection: React.FC<Props> = ({
           <div
             className={`cashflow-row ${cashFlow < 0 ? 'negative' : 'positive'}`}
           >
-            <div className="cashflow-label">Total Cashflow</div>
-            <div className="cashflow-amount">${cashFlow.toLocaleString()}</div>
+            <div className="cashflow-label">Total Expenses</div>
+            <div className="cashflow-amount">${totalExpensesDb.toLocaleString()}</div>
           </div>
         </div>
 
@@ -201,7 +276,7 @@ const SummarySection: React.FC<Props> = ({
           {!isEditing ? (
             <>
               <span className="savings-amount">
-                {loading ? 'Loading...' : `$${cashSavings.toLocaleString()}`}
+                {loading ? 'Loading...' : `$${netCash.toLocaleString()}`}
               </span>
               {!loading && (
                 <button 

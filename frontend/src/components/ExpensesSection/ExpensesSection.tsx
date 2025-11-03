@@ -1,88 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { expensesAPI } from '../../utils/api';
+import React, { useState } from 'react';
+import { useExpenses } from '../../hooks/useExpenses';
 import './ExpensesSection.css';
 
-interface ExpenseItem {
-  id: number;
-  name: string;
-  amount: number;
-}
-
 const ExpenseSection: React.FC = () => {
-  const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
+  const { expenses, loading, error, addExpense: addExpenseToHook, deleteExpense: deleteExpenseFromHook } = useExpenses();
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
-  // Fetch expenses on component mount
-  useEffect(() => {
-    fetchExpenses();
-  }, []);
-
-  const fetchExpenses = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await expensesAPI.getExpenses();
-      
-      console.log('Expenses API response:', response);
-      
-      // Ensure response is an array and properly formatted
-      const expensesData = Array.isArray(response) ? response.map((item: any) => ({
-        id: item.id,
-        name: item.name,
-        amount: typeof item.amount === 'number' ? item.amount : parseFloat(item.amount)
-      })) : [];
-      
-      setExpenses(expensesData);
-    } catch (err: any) {
-      console.error('Error fetching expenses:', err);
-      setError('Failed to load expenses');
-      setExpenses([]); // Set empty array on error
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const addExpense = async () => {
+  const handleAddExpense = async () => {
     if (!name.trim() || !amount.trim() || isAdding) return;
 
     try {
       setIsAdding(true);
-      setError(null);
-      const response = await expensesAPI.addExpense(name, parseFloat(amount));
-      // Backend returns { message, expense }, so extract the expense
-      const expenseData = response.expense || response;
-      const newExpense: ExpenseItem = {
-        id: expenseData.id,
-        name: expenseData.name,
-        amount: expenseData.amount
-      };
-      setExpenses([...expenses, newExpense]);
+      await addExpenseToHook(name, parseFloat(amount));
       setName('');
       setAmount('');
     } catch (err: any) {
-      console.error('Error adding expense:', err);
-      setError('Failed to add expense');
+      // Error is handled in hook
     } finally {
       setIsAdding(false);
     }
   };
 
-  const deleteExpense = async (id: number) => {
-    if (isDeleting !== null) return; // Prevent multiple simultaneous deletes
+  const handleDeleteExpense = async (id: number) => {
+    if (isDeleting !== null) return;
     
     try {
       setIsDeleting(id);
-      setError(null);
-      await expensesAPI.deleteExpense(id);
-      setExpenses(expenses.filter((expense) => expense.id !== id));
+      await deleteExpenseFromHook(id);
     } catch (err: any) {
-      console.error('Error deleting expense:', err);
-      setError('Failed to delete expense');
+      // Error is handled in hook
     } finally {
       setIsDeleting(null);
     }
@@ -110,7 +59,7 @@ const ExpenseSection: React.FC = () => {
               </span>
               <button
                 className="delete-btn"
-                onClick={() => deleteExpense(item.id)}
+                onClick={() => handleDeleteExpense(item.id)}
                 disabled={isDeleting === item.id}
               >
                 {isDeleting === item.id ? '...' : '✕'}
@@ -136,7 +85,7 @@ const ExpenseSection: React.FC = () => {
 
         <button 
           className="add-expense-btn" 
-          onClick={addExpense}
+          onClick={handleAddExpense}
           disabled={isAdding || !name.trim() || !amount.trim()}
         >
           {isAdding ? 'Adding...' : '+ Add Expense'}
