@@ -1,20 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useExpenses } from '../../hooks/useExpenses';
 import { cashSavingsAPI, incomeAPI } from '../../utils/api';
-import { passiveIncomeStore } from '../../state/passiveIncomeStore';
 import { incomeTotalsStore } from '../../state/incomeTotalsStore';
 import './SummarySection.css';
 
 type Props = {
   passiveIncome?: number;
   totalExpenses?: number;
-  totalIncome?: number; // new prop for display
+  totalIncome?: number;
 };
 
 const SummarySection: React.FC<Props> = ({
-  passiveIncome = 0,
-  totalExpenses = 0,
-  totalIncome = 0, // default placeholder, backend will replace
 }) => {
   const [cashSavings, setCashSavings] = useState<number>(0);
   const [isEditing, setIsEditing] = useState(false);
@@ -22,9 +18,9 @@ const SummarySection: React.FC<Props> = ({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Passive income used for the progress block (fetched from IncomeSection data)
-  const [passiveIncomeProgress, setPassiveIncomeProgress] = useState<number>(0);
-  const [totalIncomeLive, setTotalIncomeLive] = useState<number>(0);
+  
+  // Income totals from store
+  const [incomeTotals, setIncomeTotals] = useState({ earned: 0, portfolio: 0, passive: 0, total: 0 });
 
   // Pull total expenses from backend via custom hook
   const { totalExpenses: totalExpensesDb } = useExpenses();
@@ -34,44 +30,16 @@ const SummarySection: React.FC<Props> = ({
     fetchCashSavings();
   }, []);
 
-  // Fetch passive income total initially and subscribe to store for live updates
+  // Subscribe to income totals store for live updates
   useEffect(() => {
     // Seed from store immediately
-    setPassiveIncomeProgress(passiveIncomeStore.get());
+    setIncomeTotals(incomeTotalsStore.get());
 
-    const unsub = passiveIncomeStore.subscribe(() => {
-      setPassiveIncomeProgress(passiveIncomeStore.get());
-    });
-
-    // Also fetch once to prime the store if needed
-    const fetchPassiveIncome = async () => {
-      try {
-        const response = await incomeAPI.getIncomeLines();
-        const incomeLines = Array.isArray(response) ? response : [];
-        const totalPassive = incomeLines
-          .filter((item: any) => item.type === 'Passive')
-          .reduce((sum: number, item: any) => sum + (typeof item.amount === 'number' ? item.amount : parseFloat(item.amount)), 0);
-        passiveIncomeStore.set(totalPassive || 0);
-      } catch (e) {
-        console.error('Error fetching passive income:', e);
-      }
-    };
-    fetchPassiveIncome();
-
-    return () => {
-      unsub();
-    };
-  }, []);
-
-  // Subscribe to total income totals for live updates
-  useEffect(() => {
-    // seed
-    setTotalIncomeLive(incomeTotalsStore.get().total);
     const unsub = incomeTotalsStore.subscribe(() => {
-      setTotalIncomeLive(incomeTotalsStore.get().total);
+      setIncomeTotals(incomeTotalsStore.get());
     });
 
-    // Also fetch once to prime the totals if IncomeSection hasn't yet
+    // Fetch income data once to prime the store if needed
     const fetchTotals = async () => {
       try {
         const response = await incomeAPI.getIncomeLines();
@@ -87,7 +55,7 @@ const SummarySection: React.FC<Props> = ({
           .reduce((s: number, i: any) => s + (typeof i.amount === 'number' ? i.amount : parseFloat(i.amount)), 0);
         incomeTotalsStore.replace({ earned, portfolio, passive });
       } catch (e) {
-        // non-fatal
+        console.error('Error fetching income totals:', e);
       }
     };
     fetchTotals();
@@ -113,8 +81,7 @@ const SummarySection: React.FC<Props> = ({
 
   const handleEditClick = () => {
     setIsEditing(true);
-    const currentNet = (totalIncomeLive || 0) - (totalExpensesDb || 0);
-    setEditValue(currentNet.toString());
+    setEditValue(cashSavings.toString());
   };
 
   const handleCancelEdit = () => {
@@ -158,27 +125,18 @@ const SummarySection: React.FC<Props> = ({
     }
   };
   
-  // Net cash/savings = Total Income - Total Expenses (live values)
-  const netCash = (totalIncomeLive || 0) - (totalExpensesDb || 0);
-  // Percentage of passive income relative to TOTAL expenses from DB
-  const percent = (() => {
-    const expensesBase = totalExpensesDb; // use live DB-driven total expenses
-    if (!expensesBase || expensesBase <= 0) return 0;
-    const ratio = (passiveIncomeProgress || 0) / expensesBase;
+  // Calculate values for the summary section
+  // Progress bar: (Passive Income + Portfolio Income) / Total Expenses
+  const passiveAndPortfolioIncome = incomeTotals.passive + incomeTotals.portfolio;
+  const progressPercent = (() => {
+    if (!totalExpensesDb || totalExpensesDb <= 0) return 0;
+    const ratio = passiveAndPortfolioIncome / totalExpensesDb;
     return Math.min(100, Math.max(0, Math.round(ratio * 100)));
   })();
 
-  // New: compute cashflow and values for bar graph
-  const cashFlow = totalIncomeLive - totalExpenses;
-
-  // Determine max for scaling bars (use income vs passive income)
-  const barMax = Math.max(totalIncomeLive, passiveIncomeProgress, 1);
-
-  const toBarPercent = (value: number) =>
-    Math.round((value / barMax) * 100);
-
-  const incomeBarPercent = toBarPercent(totalIncomeLive);
-  const passiveBarPercent = toBarPercent(passiveIncomeProgress);
+  // Cashflow: Total Income - Total Expenses
+  const totalIncomeLive = incomeTotals.total;
+  const cashFlow = totalIncomeLive - totalExpensesDb;
 
   return (
     <section className="summary-section">
@@ -187,12 +145,12 @@ const SummarySection: React.FC<Props> = ({
       </div>
 
       <div className="summary-content">
-        {/* Progress block tracking passive income */}
+        {/* Progress block tracking passive + portfolio income */}
         <div className="progress-container">
           <div className="progress-header">
-            <span className="progress-label">Passive income</span>
+            <span className="progress-label">Passive + Portfolio Income</span>
             <span className="progress-amount">
-              ${passiveIncomeProgress.toLocaleString()}
+              ${passiveAndPortfolioIncome.toLocaleString()}
             </span>
           </div>
 
@@ -201,26 +159,25 @@ const SummarySection: React.FC<Props> = ({
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-valuenow={percent}
-            aria-label="Passive income progress"
+            aria-valuenow={progressPercent}
+            aria-label="Passive and portfolio income progress"
           >
             <div
               className="progress-fill"
-              style={{ width: `${percent}%` }}
+              style={{ width: `${progressPercent}%` }}
               aria-hidden="true"
             />
           </div>
 
           <div className="progress-footer">
-            <span className="progress-percent">{percent}%</span>
+            <span className="progress-percent">{progressPercent}%</span>
             <span className="progress-target">
-              of ${totalExpensesDb.toLocaleString()}
+              of ${totalExpensesDb.toLocaleString()} (Total Expenses)
             </span>
           </div>
         </div>
 
-        {/* New: Horizontal bar graph for Total Income and Passive Income */}
-        {/* Grouped inside a darker, square-ish card */}
+        {/* Bar chart showing Total Income, Total Expenses, and Cashflow */}
         <div className="graph-card" aria-hidden={false}>
           <div className="horizontal-graph">
             <div className="hbar">
@@ -228,11 +185,11 @@ const SummarySection: React.FC<Props> = ({
               <div
                 className="hbar-track"
                 role="img"
-                aria-label={`Total income ${totalIncome}`}
+                aria-label={`Total income ${totalIncomeLive}`}
               >
                 <div
                   className="hbar-fill income"
-                  style={{ width: `${incomeBarPercent}%` }}
+                  style={{ width: `${totalIncomeLive > 0 ? 100 : 0}%` }}
                   aria-hidden="true"
                 />
               </div>
@@ -240,43 +197,43 @@ const SummarySection: React.FC<Props> = ({
             </div>
 
             <div className="hbar">
-              <div className="hbar-label">Passive Income</div>
+              <div className="hbar-label">Total Expenses</div>
               <div
                 className="hbar-track"
                 role="img"
-                aria-label={`Passive income ${passiveIncome}`}
+                aria-label={`Total expenses ${totalExpensesDb}`}
               >
                 <div
-                  className="hbar-fill passive"
-                  style={{ width: `${passiveBarPercent}%` }}
+                  className="hbar-fill expenses"
+                  style={{ width: `${totalExpensesDb > 0 ? Math.min(100, (totalExpensesDb / Math.max(totalIncomeLive, totalExpensesDb, 1)) * 100) : 0}%` }}
                   aria-hidden="true"
                 />
               </div>
-              <div className="hbar-value">${passiveIncomeProgress.toLocaleString()}</div>
+              <div className="hbar-value">${totalExpensesDb.toLocaleString()}</div>
             </div>
           </div>
 
-          {/* Total cashflow row inside the same card */}
+          {/* Cashflow row inside the same card */}
           <div
             className={`cashflow-row ${cashFlow < 0 ? 'negative' : 'positive'}`}
           >
-            <div className="cashflow-label">Total Expenses</div>
-            <div className="cashflow-amount">${totalExpensesDb.toLocaleString()}</div>
+            <div className="cashflow-label">Cashflow</div>
+            <div className="cashflow-amount">
+              ${Math.abs(cashFlow).toLocaleString()}
+              {cashFlow < 0 && ' (deficit)'}
+            </div>
           </div>
         </div>
-
-        {/* Existing content placeholder */}
-        {/* Content will be added when data integration begins */}
       </div>
 
-      {/* Bottom savings row */}
+      {/* Bottom savings row - User-editable, not auto-calculated */}
       <div className="savings-bar">
         <span className="savings-label">Cash / Savings</span>
         <div className="savings-edit-container">
           {!isEditing ? (
             <>
               <span className="savings-amount">
-                {loading ? 'Loading...' : `$${netCash.toLocaleString()}`}
+                {loading ? 'Loading...' : `$${cashSavings.toLocaleString()}`}
               </span>
               {!loading && (
                 <button 

@@ -484,6 +484,12 @@
   box-shadow: 0 6px 18px color-mix(in srgb, var(--color-purple) 12%, transparent);
 }
 
+/* Expenses: warm/muted red-pink gradient */
+.hbar-fill.expenses {
+  background: linear-gradient(90deg, light-dark(#e0626f, #e0626f) 0%, light-dark(#f3a6b0, #f3a6b0) 100%);
+  box-shadow: 0 6px 18px light-dark(rgba(224,98,111,0.12), rgba(224,98,111,0.12));
+}
+
 /* Passive: slightly lighter purple variant */
 .hbar-fill.passive {
   background: linear-gradient(90deg, color-mix(in srgb, var(--color-purple) 85%, transparent) 0%, light-dark(rgba(198,157,247,0.85), rgba(198,157,247,0.85)) 100%);
