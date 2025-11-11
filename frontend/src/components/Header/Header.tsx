@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './Header.css';
 import { useAuth } from '../../context/AuthContext';
 
@@ -9,6 +9,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onAddBalanceSheet }) => {
   const { user } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -18,6 +19,23 @@ const Header: React.FC<HeaderProps> = ({ onAddBalanceSheet }) => {
     setIsDropdownOpen(false);
     onAddBalanceSheet?.();
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
   
   return (
     <header className="header">
@@ -34,7 +52,7 @@ const Header: React.FC<HeaderProps> = ({ onAddBalanceSheet }) => {
         <h1 className="header-title">Dashboard</h1>
       </div>
       <div className="header-right">
-        <div className="add-button-container">
+        <div className="add-button-container" ref={dropdownRef}>
           <button className="add-button" onClick={toggleDropdown} title="Add new item">
             +
           </button>

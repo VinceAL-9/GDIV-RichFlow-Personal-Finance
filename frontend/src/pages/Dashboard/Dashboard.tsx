@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { balanceSheetAPI } from '../../utils/api';
 import Header from '../../components/Header/Header';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import IncomeSection from '../../components/IncomeSection/IncomeSection';
@@ -14,6 +15,7 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, loading } = useAuth();
   const [showBalanceSheet, setShowBalanceSheet] = useState(false);
+  const [balanceSheetExists, setBalanceSheetExists] = useState(false);
 
   useEffect(() => {
     // Only redirect if loading is complete and user is not authenticated
@@ -21,6 +23,26 @@ const Dashboard: React.FC = () => {
       navigate('/'); // go to Landing instead of Login
     }
   }, [isAuthenticated, loading, navigate]);
+
+  // Check if user has a balance sheet
+  useEffect(() => {
+    const checkBalanceSheet = async () => {
+      if (!isAuthenticated) return;
+      
+      try {
+        const balanceSheet = await balanceSheetAPI.getBalanceSheet();
+        if (balanceSheet) {
+          setBalanceSheetExists(true);
+          setShowBalanceSheet(true);
+        }
+      } catch (error) {
+        console.error('Error checking balance sheet:', error);
+        setBalanceSheetExists(false);
+      }
+    };
+
+    checkBalanceSheet();
+  }, [isAuthenticated]);
 
   // Show loading while checking authentication
   if (loading) {
@@ -36,8 +58,14 @@ const Dashboard: React.FC = () => {
     return null;
   }
 
-  const handleAddBalanceSheet = () => {
-    setShowBalanceSheet(true);
+  const handleAddBalanceSheet = async () => {
+    try {
+      await balanceSheetAPI.createBalanceSheet();
+      setBalanceSheetExists(true);
+      setShowBalanceSheet(true);
+    } catch (error) {
+      console.error('Error creating balance sheet:', error);
+    }
   };
 
   return (
