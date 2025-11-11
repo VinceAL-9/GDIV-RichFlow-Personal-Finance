@@ -8,6 +8,7 @@ import authRoutes from './routes/auth.routes';
 import cashSavingsRoutes from './routes/cashSavings.routes';
 import incomeRoutes from './routes/income.routes';
 import expenseRoutes from './routes/expense.routes';
+import aiRoutes from './routes/ai.routes';
 import { errorHandler } from './middleware/errorHandler.middleware';
 
 // Load environment variables from .env file
@@ -59,6 +60,9 @@ app.use('/api/expenses', expenseRoutes);
 
 // Mount other API routes
 app.use('/api', routes);
+
+app.use('/api/ai', aiRoutes);
+
 
 // Handle 404s for API routes
 app.use('/api', (req, res) => {
