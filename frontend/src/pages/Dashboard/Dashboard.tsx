@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Header from '../../components/Header/Header';
@@ -7,10 +7,14 @@ import IncomeSection from '../../components/IncomeSection/IncomeSection';
 import SummarySection from '../../components/SummarySection/SummarySection';
 import ExpensesSection from '../../components/ExpensesSection/ExpensesSection';
 import './Dashboard.css';
+import RightSidePanel from '../../components/RightSidePanel/RightSidePanel';
+import SakiAssistant from '../../components/RightSidePanel/SakiAssistant';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, loading } = useAuth();
+
+  const [panelOpen, setPanelOpen] = useState<boolean>(false);
 
   useEffect(() => {
     // Only redirect if loading is complete and user is not authenticated
@@ -37,7 +41,7 @@ const Dashboard: React.FC = () => {
     <div className="dashboard-container">
       <Header />
       <div className="dashboard-main">
-        <Sidebar />
+  <Sidebar onOpenAssistant={() => setPanelOpen(true)} />
         <main className="dashboard-content" style={{ backgroundColor: '#000000' }}>
           <div className="dashboard-grid">
             <div className="grid-left">
@@ -54,6 +58,9 @@ const Dashboard: React.FC = () => {
           </div>
         </main>
       </div>
+      <RightSidePanel isOpen={panelOpen} onClose={() => setPanelOpen(false)} title="Saki Assistant">
+        <SakiAssistant />
+      </RightSidePanel>
     </div>
   );
 };
