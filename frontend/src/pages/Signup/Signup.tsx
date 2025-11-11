@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const Signup: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -10,7 +11,8 @@ const Signup: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -55,11 +57,16 @@ const Signup: React.FC = () => {
     }
 
     try {
+      // Logout first to clear any existing session (user state + tokens)
+      // This ensures user is fully logged out if they were previously authenticated
+      await logout();
+
       const response = await fetch('http://localhost:5000/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Include cookies to allow backend to clear refresh token
         body: JSON.stringify({
           name: formData.username,
           email: formData.email,
@@ -73,18 +80,17 @@ const Signup: React.FC = () => {
         throw new Error(data.error || 'Signup failed');
       }
 
-      // Success - redirect or show success message
+      // Success - clear form and redirect to login
       console.log('User created successfully:', data.user);
-      navigate('/login')
-      alert('Account created successfully! You can now log in.');
-
-      // Redirect to login page or clear form
       setFormData({
         username: '',
         email: '',
         password: '',
         confirmPassword: ''
       });
+
+      alert('Account created successfully! You can now log in.');
+      navigate('/login');
 
     } catch (err: any) {
       setError(err.message || 'Something went wrong during signup');

@@ -1,10 +1,11 @@
 import React from 'react';
 import './Landing.css';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const Landing: React.FC = () => {
   const navigate = useNavigate();
-
+  const { isAuthenticated } = useAuth();
   return (
     <div className="text-white" style={{ background: 'linear-gradient(to bottom right, #7345AF, #7345AF, #1E1E1E, #000000)', minHeight: '100vh' }}>
       {/* Header */}
@@ -20,7 +21,7 @@ const Landing: React.FC = () => {
           {/* Navigation */}
           <nav className="flex gap-4">
             <button onClick={() => navigate('/login')} className="bg-purple text-gold px-8 py-3 rounded-2xl font-bold text-xl hover:bg-opacity-90 transition btn-hover-effect">
-              Log in
+              { isAuthenticated ? 'Dashboard' : 'Log in'}
             </button>
             <button onClick={() => navigate('/signup')} className="bg-purple text-gold px-8 py-3 rounded-2xl font-bold text-xl hover:bg-opacity-90 transition btn-hover-effect">
               Sign up

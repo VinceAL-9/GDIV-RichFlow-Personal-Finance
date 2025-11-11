@@ -34,6 +34,10 @@ export async function signup(req: Request, res: Response, next: NextFunction) {
       }
     }
 
+    // Clear any existing refresh token cookie to force re-login
+    // This handles the case where user is already logged in and creates a new account
+    res.clearCookie('refreshToken');
+
     // Create user
     const user = await createUser({ name, email, password });
 

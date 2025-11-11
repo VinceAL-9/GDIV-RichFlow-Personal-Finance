@@ -22,56 +22,16 @@ const Sidebar: React.FC = () => {
   return (
     <aside className={`sidebar ${ expanded ? 'expanded' : ''}` } onMouseEnter={() => setExpanded(true)} onMouseLeave={() => setExpanded(false)}>
       
+      {/* Home Button */}
       <div className="sidebar-section">
-      <button className="selection large"> 
+        <button className="selection large" onClick={() => navigate("/")}> 
           <div className="sidebar-button large"></div>
           <span className="sidebar-text home"> Home </span>
         </button>
       </div>
 
+      {/* General Section */}
       <div className="sidebar-section">
-
-        <button className="selection small">
-          <div className="sidebar-button small"></div>
-          <span className="sidebar-text"> Categories </span>
-        </button>
-
-        <button className="selection large"> 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> Income </span>
-        </button>
-
-        <button className="selection large"> 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> Expenses </span>
-        </button>
-      </div>
-
-      <div className="sidebar-section">
-
-        <button className="selection small">
-          <div className="sidebar-button small"></div>
-          <span className="sidebar-text"> Layouts </span>
-        </button>
-
-        <button className="selection large"> 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> Student </span>
-        </button>
-
-        <button className="selection large"> 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> Adult </span>
-        </button>
-
-        <button className="selection large"> 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> Custom </span>
-        </button>
-      </div>
-
-      <div className="sidebar-section">
-
         <button className="selection small">
           <div className="sidebar-button small"></div>
           <span className="sidebar-text"> General </span>
@@ -79,12 +39,45 @@ const Sidebar: React.FC = () => {
 
         <button className="selection large"> 
           <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> AI Assistant </span>
+          <span className="sidebar-text"> User Guide </span>
+        </button>
+
+        <button className="selection large"> 
+          <div className="sidebar-button large"></div>
+          <span className="sidebar-text"> Change Currency </span>
+        </button>
+
+        <button className="selection large"> 
+          <div className="sidebar-button large"></div>
+          <span className="sidebar-text"> Saki Assistant </span>
+        </button>
+      </div>
+
+      {/* Settings Section */}
+      <div className="sidebar-section">
+        <button className="selection small">
+          <div className="sidebar-button small"></div>
+          <span className="sidebar-text"> Settings </span>
+        </button>
+
+        <button className="selection large"> 
+          <div className="sidebar-button large"></div>
+          <span className="sidebar-text"> Change Username </span>
+        </button>
+
+        <button className="selection large"> 
+          <div className="sidebar-button large"></div>
+          <span className="sidebar-text"> Change Email </span>
+        </button>
+
+        <button className="selection large"> 
+          <div className="sidebar-button large"></div>
+          <span className="sidebar-text"> Change Password </span>
         </button>
 
         <button className="selection large" onClick={handleLogout}> 
           <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> Log out </span>
+          <span className="sidebar-text"> Log Out </span>
         </button>
       </div>
 
