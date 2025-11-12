@@ -4,10 +4,12 @@ import { useAuth } from '../../context/AuthContext';
 
 interface HeaderProps {
   onAddBalanceSheet?: () => void;
+  onToggleBalanceSheet?: (show: boolean) => void;
   balanceSheetExists?: boolean;
+  balanceSheetVisible?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ onAddBalanceSheet, balanceSheetExists }) => {
+const Header: React.FC<HeaderProps> = ({ onAddBalanceSheet, onToggleBalanceSheet, balanceSheetExists, balanceSheetVisible = false }) => {
   const { user } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -19,8 +21,8 @@ const Header: React.FC<HeaderProps> = ({ onAddBalanceSheet, balanceSheetExists }
   const handleBalanceSheetAction = () => {
     setIsDropdownOpen(false);
     if (balanceSheetExists) {
-      // TODO: Implement remove balance sheet functionality
-      console.log("Remove balance sheet clicked");
+      // Toggle visibility without confirmation for a smoother UX
+      onToggleBalanceSheet?.(!balanceSheetVisible);
     } else {
       onAddBalanceSheet?.();
     }
@@ -69,7 +71,7 @@ const Header: React.FC<HeaderProps> = ({ onAddBalanceSheet, balanceSheetExists }
           {isDropdownOpen && (
             <div className="dropdown-menu">
               <button className="dropdown-item" onClick={handleBalanceSheetAction}>
-                {balanceSheetExists ? 'Remove Balance Sheet' : 'Add Balance Sheet'}
+                {balanceSheetExists ? (balanceSheetVisible ? 'Hide Balance Sheet' : 'Show Balance Sheet') : 'Add Balance Sheet'}
               </button>
             </div>
           )}

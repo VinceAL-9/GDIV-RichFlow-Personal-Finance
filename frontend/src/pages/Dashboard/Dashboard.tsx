@@ -14,7 +14,14 @@ import './Dashboard.css';
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, loading } = useAuth();
-  const [showBalanceSheet, setShowBalanceSheet] = useState(false);
+  const [showBalanceSheet, setShowBalanceSheet] = useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem('balanceSheetVisible');
+      return stored === null ? true : stored === 'true';
+    } catch (e) {
+      return true;
+    }
+  });
   const [balanceSheetExists, setBalanceSheetExists] = useState(false);
 
   useEffect(() => {
@@ -33,7 +40,17 @@ const Dashboard: React.FC = () => {
         const balanceSheet = await balanceSheetAPI.getBalanceSheet();
         if (balanceSheet) {
           setBalanceSheetExists(true);
-          setShowBalanceSheet(true);
+          // Respect user preference stored in localStorage
+          try {
+            const stored = localStorage.getItem('balanceSheetVisible');
+            if (stored === null) {
+              setShowBalanceSheet(true);
+            } else {
+              setShowBalanceSheet(stored === 'true');
+            }
+          } catch (e) {
+            setShowBalanceSheet(true);
+          }
         }
       } catch (error) {
         console.error('Error checking balance sheet:', error);
@@ -68,9 +85,18 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const handleToggleBalanceSheet = (show: boolean) => {
+    setShowBalanceSheet(show);
+    try {
+      localStorage.setItem('balanceSheetVisible', show ? 'true' : 'false');
+    } catch (e) {
+      // ignore storage errors
+    }
+  };
+
   return (
     <div className="dashboard-container">
-      <Header onAddBalanceSheet={handleAddBalanceSheet} balanceSheetExists={balanceSheetExists} />
+  <Header onAddBalanceSheet={handleAddBalanceSheet} onToggleBalanceSheet={handleToggleBalanceSheet} balanceSheetExists={balanceSheetExists} balanceSheetVisible={showBalanceSheet} />
       <div className="dashboard-main">
         <Sidebar />
         <main className="dashboard-content" style={{ backgroundColor: '#000000' }}>
