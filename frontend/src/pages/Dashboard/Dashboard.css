@@ -130,3 +130,27 @@ html, body {
     gap: 1rem;
   }
 }
+
+/* Toggle button for opening the right panel */
+.panel-toggle {
+  position: fixed;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 60;
+  background: linear-gradient(90deg,#7345AF,#EDCA69);
+  color: #000;
+  border: none;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .panel-toggle {
+    right: 0.5rem;
+    top: 0.5rem;
+    padding: 0.45rem 0.5rem;
+  }
+}

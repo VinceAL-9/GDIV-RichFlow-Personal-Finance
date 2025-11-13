@@ -3,6 +3,7 @@ import { incomeAPI } from "../../utils/api";
 import "./IncomeSection.css";
 import { passiveIncomeStore } from "../../state/passiveIncomeStore";
 import { incomeTotalsStore } from "../../state/incomeTotalsStore";
+import { useFinancialData } from "../../context/FinancialDataContext";
 
 interface IncomeItem {
   id: number;
@@ -19,6 +20,7 @@ const IncomeSection: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
+  const { triggerDataUpdate } = useFinancialData();
 
   // Fetch income data on component mount
   useEffect(() => {
@@ -125,6 +127,9 @@ const IncomeSection: React.FC = () => {
         passiveIncomeStore.set(passiveTotal);
         incomeTotalsStore.set({ passive: passiveTotal });
       }
+      
+      // Trigger financial data update for AI insights
+      triggerDataUpdate();
     } catch (err: any) {
       console.error('Error adding income:', err);
       setError('Failed to add income');
@@ -162,6 +167,9 @@ const IncomeSection: React.FC = () => {
         passiveIncomeStore.set(passiveTotal);
         incomeTotalsStore.set({ passive: passiveTotal });
       }
+      
+      // Trigger financial data update for AI insights
+      triggerDataUpdate();
     } catch (err: any) {
       console.error('Error deleting income:', err);
       setError('Failed to delete income');

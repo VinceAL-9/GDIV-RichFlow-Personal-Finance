@@ -23,10 +23,22 @@ const store: StoreState = {
 };
 
 const listeners = new Set<() => void>();
+const dataChangeListeners = new Set<() => void>();
+
 const notify = () => listeners.forEach((l) => l());
+const notifyDataChange = () => dataChangeListeners.forEach((l) => l());
+
 const setState = (partial: Partial<StoreState>) => {
   Object.assign(store, partial);
   notify();
+};
+
+// Allow external listeners for data changes
+export const onExpensesDataChange = (listener: () => void) => {
+  dataChangeListeners.add(listener);
+  return () => {
+    dataChangeListeners.delete(listener);
+  };
 };
 
 // Allow external reset on auth change
@@ -76,6 +88,7 @@ const addExpenseInternal = async (name: string, amount: number) => {
       amount: expenseData.amount,
     };
     setState({ expenses: [...store.expenses, newExpense] });
+    notifyDataChange(); // Notify data change listeners
     return newExpense;
   } catch (err) {
     console.error('Error adding expense:', err);
@@ -89,6 +102,7 @@ const deleteExpenseInternal = async (id: number) => {
     setState({ error: null });
     await expensesAPI.deleteExpense(id);
     setState({ expenses: store.expenses.filter((e) => e.id !== id) });
+    notifyDataChange(); // Notify data change listeners
   } catch (err) {
     console.error('Error deleting expense:', err);
     setState({ error: 'Failed to delete expense' });
@@ -147,5 +161,3 @@ export const useExpenses = () => {
     deleteExpense,
   };
 };
-
-

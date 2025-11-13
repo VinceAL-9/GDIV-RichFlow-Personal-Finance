@@ -3,7 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import './Sidebar.css';
 
-const Sidebar: React.FC = () => {
+type Props = {
+  onOpenAssistant?: () => void;
+};
+
+const Sidebar: React.FC<Props> = ({ onOpenAssistant }) => {
   const [expanded, setExpanded] = React.useState(false);
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -47,7 +51,7 @@ const Sidebar: React.FC = () => {
           <span className="sidebar-text"> Change Currency </span>
         </button>
 
-        <button className="selection large"> 
+        <button className="selection large" onClick={() => onOpenAssistant && onOpenAssistant()}> 
           <div className="sidebar-button large"></div>
           <span className="sidebar-text"> Saki Assistant </span>
         </button>

@@ -411,3 +411,13 @@ export const liabilitiesAPI = {
     });
   },
 };
+
+// Financial Analysis API call
+export const aiAPI = {
+  getFinancialAnalysis: async () => {
+    return await apiRequest('/ai/showinformation', {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  }
+}
