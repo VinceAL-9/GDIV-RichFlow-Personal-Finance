@@ -1,6 +1,7 @@
 import { getIncomeLines } from './income.service';
 import { getExpenses } from './expense.service';
 import { getCashSavings } from './cashSavings.service';
+import { getBalanceSheet } from './balanceSheet.service';
 import { GoogleGenAI } from '@google/genai';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
@@ -16,33 +17,53 @@ if (!GEMINI_MODEL) {
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 // collecting user financial status
-export async function collectUserFinancialStatus(userId: number) {
-    const [incomes, expenses, cashSavings] = await Promise.all([
+export async function collectUserFinancialStatus(userId: number, includeBalanceSheet: boolean = true) {
+    const [incomes, expenses, cashSavings, balanceSheet] = await Promise.all([
         getIncomeLines(userId),
         getExpenses(userId),
         getCashSavings(userId),
+        includeBalanceSheet ? getBalanceSheet(userId) : Promise.resolve(null),
     ]);
 
-    return { incomes, expenses, cashSavings };
+    return { incomes, expenses, cashSavings, balanceSheet: includeBalanceSheet ? balanceSheet : null };
 }
 
-export async function analyzeFinance(userId: number) {
-    const { incomes, expenses, cashSavings } = await collectUserFinancialStatus(userId);
+export async function analyzeFinance(userId: number, includeBalanceSheet: boolean = true) {
+    const { incomes, expenses, cashSavings, balanceSheet } = await collectUserFinancialStatus(userId, includeBalanceSheet);
+
+    // Build user data string conditionally
+    let userDataString = `Incomes: ${JSON.stringify(incomes)}
+        Expenses: ${JSON.stringify(expenses)}
+        Cash Savings: ${JSON.stringify(cashSavings)}`;
+    
+    if (includeBalanceSheet && balanceSheet) {
+        userDataString += `
+        Balance Sheet (Assets & Liabilities): ${JSON.stringify(balanceSheet)}`;
+    }
+
+    // Build analysis categories based on available data
+    const categories = [
+        '- Income analysis: insights on earned, passive, and portfolio income trends, ratios and more',
+        '- Expense behavior: notable increases, recurring high-cost categories, spending balance and more',
+        '- Cashflow and savings: sustainability of current savings rate, spending-to-income ratio and more'
+    ];
+    
+    if (includeBalanceSheet && balanceSheet) {
+        categories.push('- Assets and liabilities: asset growth, debt-to-asset ratio, liquidity and more');
+    }
+    
+    categories.push('- Financial Freedom Progress: percentage of expenses covered by passive/portfolio income, suggestions to improve the ratio and more');
+
+    const categoriesText = categories.join('\n        ');
 
     // ai analysis
     const response = await ai.models.generateContent({
         model: GEMINI_MODEL!,
         contents: `You are a financial adivsor. Given this user data, return only valid json with keys:
-        - Income analysis: insights on earned, passive, and portfolio income trends, ratios and more
-        - Expense behavior: notable increases, recurring high-cost categories, spending balance and more
-        - Cashflow and savings: sustainability of current savings rate, spending-to-income ratio and more
-        - Assets and liabilities: asset growth, debt-to-asset ratio, liquidity and more
-        - Financial Freedom Progress: percentage of expenses covered by passive/portfolio income, suggestions to improve the ratio and more
+        ${categoriesText}
 
         User Data:
-        Incomes: ${JSON.stringify(incomes)}
-        Expenses: ${JSON.stringify(expenses)}
-        Cash Savings: ${JSON.stringify(cashSavings)}
+        ${userDataString}
         `,
         config: {
             systemInstruction: " return in this format, at most 3 sentences per category and just put the main takeaways { 'Income analysis': '', 'Expense behavior': '', 'Cashflow and savings': '', 'Assets and liabilities': '', 'Financial Freedom Progress': '' }",

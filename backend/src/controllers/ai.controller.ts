@@ -8,7 +8,10 @@ export async function analyzeFinanceController(req: Request, res: Response, next
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const financialInformation = await analyzeFinance(userId);
+    // Get includeBalanceSheet from query parameter, default to true
+    const includeBalanceSheet = req.query.includeBalanceSheet !== 'false';
+
+    const financialInformation = await analyzeFinance(userId, includeBalanceSheet);
 
     if (!financialInformation) {
       return res.status(404).json({ error: 'Missing or insufficient information' });

@@ -414,8 +414,8 @@ export const liabilitiesAPI = {
 
 // Financial Analysis API call
 export const aiAPI = {
-  getFinancialAnalysis: async () => {
-    return await apiRequest('/ai/showinformation', {
+  getFinancialAnalysis: async (includeBalanceSheet: boolean = true) => {
+    return await apiRequest(`/ai/showinformation?includeBalanceSheet=${includeBalanceSheet}`, {
       method: 'GET',
       requiresAuth: true,
     });

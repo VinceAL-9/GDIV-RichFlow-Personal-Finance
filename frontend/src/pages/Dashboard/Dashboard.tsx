@@ -131,7 +131,7 @@ const Dashboard: React.FC = () => {
           </main>
         </div>
         <RightSidePanel isOpen={panelOpen} onClose={() => setPanelOpen(false)} title="Saki Assistant">
-          <SakiAssistant />
+          <SakiAssistant isOpen={panelOpen} includeBalanceSheet={showBalanceSheet} />
         </RightSidePanel>
       </div>
     </FinancialDataProvider>

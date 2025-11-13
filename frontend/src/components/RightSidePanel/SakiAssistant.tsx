@@ -4,6 +4,7 @@ import { aiAPI } from '../../utils/api';
 
 interface Props {
   isOpen?: boolean;
+  includeBalanceSheet?: boolean;
 }
 
 //f format analysis text
@@ -32,7 +33,7 @@ const formatAnalysis = (analysis: any): string => {
 
 
 // actual assistant content
-const SakiAssistant: React.FC<Props> = ({ isOpen = false }) => {
+const SakiAssistant: React.FC<Props> = ({ isOpen = false, includeBalanceSheet = true }) => {
   const [analysis, setAnalysis] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +45,7 @@ const SakiAssistant: React.FC<Props> = ({ isOpen = false }) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await aiAPI.getFinancialAnalysis();
+      const res = await aiAPI.getFinancialAnalysis(includeBalanceSheet);
       if (res?.success) {
         setAnalysis(res.data ?? res.analysis ?? res);
       } else {
@@ -57,7 +58,7 @@ const SakiAssistant: React.FC<Props> = ({ isOpen = false }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [includeBalanceSheet]);
 
   // trigger when panel opens (on mount this will also load if isOpen is true)
   useEffect(() => {
