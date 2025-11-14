@@ -7,6 +7,7 @@ const REFRESH_TOKEN_EXPIRY_DAYS = 30; // Refresh tokens last 30 days
 interface TokenPayload {
   userId: number;
   email: string;
+  isAdmin?: boolean;
 }
 
 /**

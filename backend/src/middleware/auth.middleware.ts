@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyAccessToken } from '../utils/jwt.utils';
+import prisma from '../config/database.config';
 
 // Extend Express Request to include user data
 declare global {
@@ -8,6 +9,7 @@ declare global {
       user?: {
         userId: number;
         email: string;
+        isAdmin?: boolean;
       };
     }
   }
@@ -42,6 +44,45 @@ export function authenticateToken(
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+/**
+ * Middleware to verify user has admin privileges
+ * Must be used after authenticateToken middleware
+ */
+export async function requireAdmin(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const userId = req.user?.userId;
+    const isAdmin = req.user?.isAdmin;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    // Check if user has isAdmin flag in token (from JWT)
+    if (isAdmin === true) {
+      return next();
+    }
+
+    // Fallback: Check database for regular users with admin flag
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { isAdmin: true }
+    });
+
+    if (!user || !user.isAdmin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    next();
+  } catch (error) {
+    console.error('Admin middleware error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 }

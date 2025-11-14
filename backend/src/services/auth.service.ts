@@ -12,6 +12,7 @@ interface UserResponse {
   id: number;
   name: string | null;
   email: string;
+  isAdmin: boolean;
   createdAt: Date;
   updatedAt: Date;
   lastLogin: Date | null;
@@ -65,6 +66,7 @@ export async function createUser(userData: CreateUserData): Promise<UserResponse
         id: true,
         name: true,
         email: true,
+        isAdmin: true,
         createdAt: true,
         updatedAt: true,
         lastLogin: true
@@ -121,7 +123,8 @@ export async function loginUser(email: string, password: string) {
   return {
     id: user.id,
     email: user.email,
-    name: user.name
+    name: user.name,
+    isAdmin: user.isAdmin
   };
 }
 
@@ -165,7 +168,8 @@ export async function findValidSession(refreshToken: string) {
         select: {
           id: true,
           email: true,
-          name: true
+          name: true,
+          isAdmin: true
         }
       }
     }
@@ -238,6 +242,7 @@ export async function updateUsername(userId: number, newName: string) {
       id: true,
       email: true,
       name: true,
+      isAdmin: true
     }
   });
 
@@ -268,7 +273,7 @@ export async function updateEmail(userId: number, newEmail: string) {
   const updated = await prisma.user.update({
     where: { id: userId },
     data: { email: newEmail, updatedAt: new Date() },
-    select: { id: true, email: true, name: true }
+    select: { id: true, email: true, name: true, isAdmin: true }
   });
 
   return updated;

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './AdminPanel.css';
 import UserList from '../UserList/UserList';
 import { adminAPI } from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
 
 interface User {
   id: number;
@@ -12,6 +13,7 @@ interface User {
 }
 
 const AdminPanel: React.FC = () => {
+  const { loading: authLoading, isAuthenticated, user } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -20,6 +22,11 @@ const AdminPanel: React.FC = () => {
 
   // Fetch users from the database
   useEffect(() => {
+    // Wait for auth to finish loading before fetching users
+    if (authLoading || !isAuthenticated) {
+      return;
+    }
+
     const fetchUsers = async () => {
       try {
         setLoading(true);
@@ -46,7 +53,7 @@ const AdminPanel: React.FC = () => {
     };
 
     fetchUsers();
-  }, []);
+  }, [authLoading, isAuthenticated]);
 
   // Filter users based on search query
   useEffect(() => {
@@ -111,13 +118,14 @@ const AdminPanel: React.FC = () => {
       </div>
 
       <div className="admin-content">
-        {loading ? (
+        {authLoading || loading ? (
           <div className="loading-message">Loading users...</div>
         ) : error ? (
           <div className="error-message">{error}</div>
         ) : (
           <UserList 
-            users={filteredUsers} 
+            users={filteredUsers}
+            currentUserId={user?.id ? Number(user.id) : undefined}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />

@@ -11,11 +11,12 @@ interface User {
 
 interface UserListProps {
   users: User[];
+  currentUserId?: number;
   onEdit?: (userId: number) => void;
   onDelete?: (userId: number) => void;
 }
 
-const UserList: React.FC<UserListProps> = ({ users, onEdit, onDelete }) => {
+const UserList: React.FC<UserListProps> = ({ users, currentUserId, onEdit, onDelete }) => {
   return (
     <div className="users-table-container">
       <table className="users-table">
@@ -47,12 +48,16 @@ const UserList: React.FC<UserListProps> = ({ users, onEdit, onDelete }) => {
                 </td>
                 <td>{new Date(user.joinedDate).toLocaleDateString()}</td>
                 <td>
-                  <button 
-                    className="action-btn delete-btn"
-                    onClick={() => onDelete?.(user.id)}
-                  >
-                    Delete
-                  </button>
+                  {user.id !== currentUserId ? (
+                    <button 
+                      className="action-btn user-list-delete-btn"
+                      onClick={() => onDelete?.(user.id)}
+                    >
+                      Delete
+                    </button>
+                  ) : (
+                    <span style={{ color: '#888', fontSize: '0.9rem' }}>You</span>
+                  )}
                 </td>
               </tr>
             ))

@@ -68,26 +68,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    // Check for admin credentials from .env
-    if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-      const accessToken = generateAccessToken({
-        userId: 0, // Special ID for admin
-        email: email
-      });
-
-      return res.status(200).json({
-        message: 'Admin login successful',
-        accessToken,
-        user: {
-          id: 0,
-          email: email,
-          name: 'Admin',
-          isAdmin: true
-        }
-      });
-    }
-
-    // Authenticate regular user
+    // Authenticate user
     const user = await loginUser(email, password);
 
     if (!user) {
@@ -97,7 +78,8 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     // Generate tokens
     const accessToken = generateAccessToken({
       userId: user.id,
-      email: user.email
+      email: user.email,
+      isAdmin: user.isAdmin
     });
 
     // Create session with refresh token
@@ -117,7 +99,8 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       user: {
         id: user.id,
         email: user.email,
-        name: user.name
+        name: user.name,
+        isAdmin: user.isAdmin
       }
     });
 
@@ -148,7 +131,8 @@ export async function refreshToken(req: Request, res: Response, next: NextFuncti
     // Generate new access token
     const accessToken = generateAccessToken({
       userId: session.User.id,
-      email: session.User.email
+      email: session.User.email,
+      isAdmin: session.User.isAdmin
     });
 
     return res.status(200).json({
@@ -156,7 +140,8 @@ export async function refreshToken(req: Request, res: Response, next: NextFuncti
       user: {
         id: session.User.id,
         email: session.User.email,
-        name: session.User.name
+        name: session.User.name,
+        isAdmin: session.User.isAdmin
       }
     });
 
@@ -232,6 +217,7 @@ export async function getProfile(req: Request, res: Response, next: NextFunction
         id: true,
         email: true,
         name: true,
+        isAdmin: true,
         createdAt: true,
         lastLogin: true
       }
@@ -245,7 +231,8 @@ export async function getProfile(req: Request, res: Response, next: NextFunction
       user: {
         id: user.id.toString(),
         email: user.email,
-        name: user.name
+        name: user.name,
+        isAdmin: user.isAdmin
       }
     });
 
