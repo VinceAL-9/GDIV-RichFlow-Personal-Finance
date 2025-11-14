@@ -126,7 +126,7 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
             </div>
-            {showBalanceSheet && (
+            {showBalanceSheet && balanceSheetExists && (
               <div className="balance-sheet-section">
                 <div className="balance-sheet-grid">
                   <AssetsSection onTotalsChange={(t: number) => setTotalAssets(t)} />
