@@ -29,6 +29,8 @@ const Dashboard: React.FC = () => {
     }
   });
   const [balanceSheetExists, setBalanceSheetExists] = useState(false);
+  const [totalAssets, setTotalAssets] = useState<number>(0);
+  const [totalLiabilities, setTotalLiabilities] = useState<number>(0);
 
   useEffect(() => {
     // Only redirect if loading is complete and user is not authenticated
@@ -113,7 +115,11 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="grid-right">
                 <div className="grid-right-top">
-                  <SummarySection />
+                  <SummarySection
+                    balanceSheetVisible={showBalanceSheet}
+                    totalAssetsProp={totalAssets}
+                    totalLiabilitiesProp={totalLiabilities}
+                  />
                 </div>
                 <div className="grid-right-bottom">
                   <ExpensesSection />
@@ -123,8 +129,8 @@ const Dashboard: React.FC = () => {
             {showBalanceSheet && (
               <div className="balance-sheet-section">
                 <div className="balance-sheet-grid">
-                  <AssetsSection />
-                  <LiabilitiesSection />
+                  <AssetsSection onTotalsChange={(t: number) => setTotalAssets(t)} />
+                  <LiabilitiesSection onTotalsChange={(t: number) => setTotalLiabilities(t)} />
                 </div>
               </div>
             )}

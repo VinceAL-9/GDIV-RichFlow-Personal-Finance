@@ -8,7 +8,11 @@ interface LiabilityItem {
   value: number;
 }
 
-const LiabilitiesSection: React.FC = () => {
+type Props = {
+  onTotalsChange?: (total: number) => void;
+};
+
+const LiabilitiesSection: React.FC<Props> = ({ onTotalsChange }) => {
   const [liabilities, setLiabilities] = useState<LiabilityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +29,11 @@ const LiabilitiesSection: React.FC = () => {
       setLoading(true);
       setError(null);
       const response = await liabilitiesAPI.getLiabilities();
-      setLiabilities(response);
+      const list = Array.isArray(response) ? response : [];
+      setLiabilities(list);
+      // notify parent of total
+      const total = list.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
+      onTotalsChange?.(total);
     } catch (err: any) {
       console.error("Error fetching liabilities:", err);
       setError("Failed to load liabilities data");
@@ -44,7 +52,10 @@ const LiabilitiesSection: React.FC = () => {
       setError(null);
       const response = await liabilitiesAPI.addLiability(name, parseFloat(amount));
       const newItem: LiabilityItem = response.liability || response;
-      setLiabilities([...liabilities, newItem]);
+      const updated = [...liabilities, newItem];
+      setLiabilities(updated);
+      const total = updated.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
+      onTotalsChange?.(total);
     } catch (err: any) {
       console.error("Error adding liability:", err);
       setError("Failed to add liability");
@@ -61,7 +72,10 @@ const LiabilitiesSection: React.FC = () => {
       setIsDeleting(id);
       setError(null);
       await liabilitiesAPI.deleteLiability(id);
-      setLiabilities(liabilities.filter((i) => i.id !== id));
+      const updated = liabilities.filter((i) => i.id !== id);
+      setLiabilities(updated);
+      const total = updated.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
+      onTotalsChange?.(total);
     } catch (err: any) {
       console.error("Error deleting liability:", err);
       setError("Failed to delete liability");

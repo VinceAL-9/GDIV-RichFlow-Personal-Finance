@@ -8,7 +8,11 @@ interface AssetItem {
   value: number;
 }
 
-const AssetsSection: React.FC = () => {
+type Props = {
+  onTotalsChange?: (total: number) => void;
+};
+
+const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
   const [assets, setAssets] = useState<AssetItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +29,10 @@ const AssetsSection: React.FC = () => {
       setLoading(true);
       setError(null);
       const response = await assetsAPI.getAssets();
-      setAssets(response);
+      const list = Array.isArray(response) ? response : [];
+      setAssets(list);
+      const total = list.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
+      onTotalsChange?.(total);
     } catch (err: any) {
       console.error("Error fetching assets:", err);
       setError("Failed to load assets data");
@@ -44,7 +51,10 @@ const AssetsSection: React.FC = () => {
       setError(null);
       const response = await assetsAPI.addAsset(name, parseFloat(amount));
       const newItem: AssetItem = response.asset || response;
-      setAssets([...assets, newItem]);
+      const updated = [...assets, newItem];
+      setAssets(updated);
+      const total = updated.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
+      onTotalsChange?.(total);
     } catch (err: any) {
       console.error("Error adding asset:", err);
       setError("Failed to add asset");
@@ -61,7 +71,10 @@ const AssetsSection: React.FC = () => {
       setIsDeleting(id);
       setError(null);
       await assetsAPI.deleteAsset(id);
-      setAssets(assets.filter((i) => i.id !== id));
+      const updated = assets.filter((i) => i.id !== id);
+      setAssets(updated);
+      const total = updated.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
+      onTotalsChange?.(total);
     } catch (err: any) {
       console.error("Error deleting asset:", err);
       setError("Failed to delete asset");

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useExpenses } from '../../hooks/useExpenses';
-import { cashSavingsAPI, incomeAPI } from '../../utils/api';
+import { cashSavingsAPI, incomeAPI, assetsAPI, liabilitiesAPI } from '../../utils/api';
 import { incomeTotalsStore } from '../../state/incomeTotalsStore';
 import './SummarySection.css';
 
@@ -8,9 +8,15 @@ type Props = {
   passiveIncome?: number;
   totalExpenses?: number;
   totalIncome?: number;
+  balanceSheetVisible?: boolean;
+  totalAssetsProp?: number;
+  totalLiabilitiesProp?: number;
 };
 
 const SummarySection: React.FC<Props> = ({
+  balanceSheetVisible = false,
+  totalAssetsProp,
+  totalLiabilitiesProp,
 }) => {
   const [cashSavings, setCashSavings] = useState<number>(0);
   const [isEditing, setIsEditing] = useState(false);
@@ -25,10 +31,63 @@ const SummarySection: React.FC<Props> = ({
   // Pull total expenses from backend via custom hook
   const { totalExpenses: totalExpensesDb } = useExpenses();
 
+  // Balance sheet totals
+  const [totalAssets, setTotalAssets] = useState<number>(0);
+  const [totalLiabilities, setTotalLiabilities] = useState<number>(0);
+  const [balanceSheetLoading, setBalanceSheetLoading] = useState(false);
+
   // Fetch cash savings on component mount
   useEffect(() => {
     fetchCashSavings();
   }, []);
+
+  // Fetch assets and liabilities when balance sheet visibility changes
+  useEffect(() => {
+    if (balanceSheetVisible) {
+      // If parent provided live totals, use them; otherwise fetch from API
+      if (typeof totalAssetsProp === 'number' && typeof totalLiabilitiesProp === 'number') {
+        setBalanceSheetLoading(false);
+        setTotalAssets(totalAssetsProp);
+        setTotalLiabilities(totalLiabilitiesProp);
+      } else {
+        fetchBalanceSheetTotals();
+      }
+    } else {
+      setTotalAssets(0);
+      setTotalLiabilities(0);
+    }
+  }, [balanceSheetVisible]);
+
+  // Update when props change (live totals from parent)
+  useEffect(() => {
+    if (balanceSheetVisible && typeof totalAssetsProp === 'number') {
+      setTotalAssets(totalAssetsProp);
+    }
+    if (balanceSheetVisible && typeof totalLiabilitiesProp === 'number') {
+      setTotalLiabilities(totalLiabilitiesProp);
+    }
+  }, [totalAssetsProp, totalLiabilitiesProp, balanceSheetVisible]);
+
+  const fetchBalanceSheetTotals = async () => {
+    try {
+      setBalanceSheetLoading(true);
+      const assetsResponse = await assetsAPI.getAssets();
+      const liabilitiesResponse = await liabilitiesAPI.getLiabilities();
+
+      const assets = Array.isArray(assetsResponse) ? assetsResponse : [];
+      const liabilities = Array.isArray(liabilitiesResponse) ? liabilitiesResponse : [];
+
+      const assetTotal = assets.reduce((sum: number, a: any) => sum + (typeof a.value === 'number' ? a.value : 0), 0);
+      const liabilityTotal = liabilities.reduce((sum: number, l: any) => sum + (typeof l.value === 'number' ? l.value : 0), 0);
+
+      setTotalAssets(assetTotal);
+      setTotalLiabilities(liabilityTotal);
+    } catch (err: any) {
+      console.error('Error fetching balance sheet totals:', err);
+    } finally {
+      setBalanceSheetLoading(false);
+    }
+  };
 
   // Subscribe to income totals store for live updates
   useEffect(() => {
@@ -138,6 +197,9 @@ const SummarySection: React.FC<Props> = ({
   const totalIncomeLive = incomeTotals.total;
   const cashFlow = totalIncomeLive - totalExpensesDb;
 
+  // Net Worth: Total Assets - Total Liabilities (only when balance sheet is visible)
+  const netWorth = balanceSheetVisible ? totalAssets - totalLiabilities : 0;
+
   return (
     <section className="summary-section">
       <div className="section-header">
@@ -224,6 +286,56 @@ const SummarySection: React.FC<Props> = ({
             </div>
           </div>
         </div>
+
+        {/* Net Worth row - only shown when balance sheet is visible */}
+        {balanceSheetVisible && (
+          <div className="graph-card net-worth-card" aria-hidden={false}>
+            {/* Horizontal bars for Assets / Liabilities to mirror Income/Expenses visuals */}
+            <div className="horizontal-graph">
+              <div className="hbar">
+                <div className="hbar-label">Total Assets</div>
+                <div
+                  className="hbar-track"
+                  role="img"
+                  aria-label={`Total assets ${totalAssets}`}
+                >
+                  <div
+                    className="hbar-fill assets"
+                    style={{ width: `${totalAssets > 0 ? Math.min(100, (totalAssets / Math.max(totalAssets, totalLiabilities, 1)) * 100) : 0}%` }}
+                    aria-hidden="true"
+                  />
+                </div>
+                <div className="hbar-value">{balanceSheetLoading ? '...' : `$${totalAssets.toLocaleString()}`}</div>
+              </div>
+
+              <div className="hbar">
+                <div className="hbar-label">Total Liabilities</div>
+                <div
+                  className="hbar-track"
+                  role="img"
+                  aria-label={`Total liabilities ${totalLiabilities}`}
+                >
+                  <div
+                    className="hbar-fill liabilities"
+                    style={{ width: `${totalLiabilities > 0 ? Math.min(100, (totalLiabilities / Math.max(totalAssets, totalLiabilities, 1)) * 100) : 0}%` }}
+                    aria-hidden="true"
+                  />
+                </div>
+                <div className="hbar-value">{balanceSheetLoading ? '...' : `$${totalLiabilities.toLocaleString()}`}</div>
+              </div>
+            </div>
+
+            <div className={`net-worth-row net-worth-total ${netWorth < 0 ? 'negative' : 'positive'}`}>
+              <div className="net-worth-label">
+                Net Worth
+              </div>
+              <div className="net-worth-amount">
+                ${balanceSheetLoading ? '...' : Math.abs(netWorth).toLocaleString()}
+                {netWorth < 0 && ' (negative)'}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Bottom savings row - User-editable, not auto-calculated */}
