@@ -4,18 +4,22 @@ import { useAuth } from '../../context/AuthContext';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated, loading } = useAuth();
+  const { login, isAuthenticated, loading, user, isAdmin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // If already authenticated, redirect to dashboard
+  // If already authenticated, redirect based on user type
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      navigate('/dashboard', { replace: true });
+      if (isAdmin) {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
     }
-  }, [isAuthenticated, loading, navigate]);
+  }, [isAuthenticated, loading, navigate, isAdmin]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,8 +28,7 @@ const Login: React.FC = () => {
 
     try {
       await login(email, password);
-      // Navigate to dashboard after successful login
-      navigate('/dashboard');
+      // Navigation is handled by useEffect based on user type
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {

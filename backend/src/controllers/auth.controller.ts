@@ -68,7 +68,26 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    // Authenticate user
+    // Check for admin credentials from .env
+    if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+      const accessToken = generateAccessToken({
+        userId: 0, // Special ID for admin
+        email: email
+      });
+
+      return res.status(200).json({
+        message: 'Admin login successful',
+        accessToken,
+        user: {
+          id: 0,
+          email: email,
+          name: 'Admin',
+          isAdmin: true
+        }
+      });
+    }
+
+    // Authenticate regular user
     const user = await loginUser(email, password);
 
     if (!user) {

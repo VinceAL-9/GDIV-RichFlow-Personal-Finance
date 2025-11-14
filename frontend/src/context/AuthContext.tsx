@@ -2,9 +2,10 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { authAPI, setAccessToken, clearAccessToken, refreshAccessToken } from '../utils/api';
 
 interface User {
-  id: string;
+  id: string | number;
   name: string;
   email: string;
+  isAdmin?: boolean;
 }
 
 interface AuthContextType {
@@ -16,6 +17,7 @@ interface AuthContextType {
   updateEmail: (newEmail: string) => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   isAuthenticated: boolean;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -115,6 +117,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     updateEmail,
     changePassword,
     isAuthenticated: !!user,
+    isAdmin: user?.isAdmin === true,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

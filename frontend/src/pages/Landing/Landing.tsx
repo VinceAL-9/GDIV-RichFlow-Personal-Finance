@@ -44,7 +44,7 @@ const Landing: React.FC = () => {
           </p>
           
           {/* CTA Button */}
-            <button onClick={() => navigate('/admin')}
+            <button onClick={() => navigate('/signup')}
             className="text-gold px-12 py-5 rounded-2xl ctext-3xl font-bold hover:bg-opacity-80 transition shadow-lg cta-button"
             style={{ background: 'linear-gradient(to bottom right, #7345AF, #7345AF, #1E1E1E, #000000)' }}
             >
