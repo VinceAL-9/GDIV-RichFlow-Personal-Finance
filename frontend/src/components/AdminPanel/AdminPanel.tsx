@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './AdminPanel.css';
 import UserList from '../UserList/UserList';
-import UserFinancialView from '../UserFinancialView/UserFinancialView';
+import AdminUserFinancialView from '../AdminUserFinancialView/AdminUserFinancialView';
 import { adminAPI } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 
@@ -118,7 +118,7 @@ const AdminPanel: React.FC = () => {
   // If a user is selected, show their financial data
   if (selectedUserId !== null) {
     return (
-      <UserFinancialView
+      <AdminUserFinancialView
         userId={selectedUserId}
         userName={selectedUserName}
         onBack={handleBackToUserList}
