@@ -6,6 +6,9 @@
     "devStart": "nodemon ./backend/server.ts",
     "dev": "nodemon ./src/server.ts"
   },
+  "prisma": {
+    "seed": "ts-node prisma/seed.currency.ts"
+  },
   "dependencies": {
     "@google/genai": "^1.29.0",
     "@prisma/client": "^6.18.0",
