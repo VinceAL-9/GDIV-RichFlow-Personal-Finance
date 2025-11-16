@@ -202,7 +202,8 @@ const SummarySection: React.FC<Props> = ({
   const cashFlow = totalIncomeLive - totalExpensesDb;
 
   // Net Worth: Total Assets - Total Liabilities (only when balance sheet is visible)
-  const netWorth = balanceSheetVisible ? totalAssets - totalLiabilities : 0;
+  const netWorth = totalAssets - totalLiabilities;
+  const shouldShowNetWorth = balanceSheetVisible && (totalAssets > 0 || totalLiabilities > 0);
 
   return (
     <section className="summary-section">
@@ -291,9 +292,9 @@ const SummarySection: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Net Worth row - only shown when balance sheet is visible */}
-        {balanceSheetVisible && (
-          <div className="graph-card net-worth-card" aria-hidden={false}>
+        {/* Net Worth row - only shown when balance sheet is visible and there's data */}
+        {shouldShowNetWorth && (
+          <div className="graph-card net-worth-card" aria-hidden={!shouldShowNetWorth}>
             {/* Horizontal bars for Assets / Liabilities to mirror Income/Expenses visuals */}
             <div className="horizontal-graph">
               <div className="hbar">
@@ -325,7 +326,7 @@ const SummarySection: React.FC<Props> = ({
                     aria-hidden="true"
                   />
                 </div>
-                <div className="hbar-value">{balanceSheetLoading ? '...' : `$${totalLiabilities.toLocaleString()}`}</div>
+                <div className="hbar-value">{balanceSheetLoading ? '...' : formatCurrency(totalLiabilities, currency)}</div>
               </div>
             </div>
 
@@ -334,7 +335,7 @@ const SummarySection: React.FC<Props> = ({
                 Net Worth
               </div>
               <div className="net-worth-amount">
-                ${balanceSheetLoading ? '...' : Math.abs(netWorth).toLocaleString()}
+                {balanceSheetLoading ? '...' : formatCurrency(Math.abs(netWorth), currency)}
                 {netWorth < 0 && ' (negative)'}
               </div>
             </div>

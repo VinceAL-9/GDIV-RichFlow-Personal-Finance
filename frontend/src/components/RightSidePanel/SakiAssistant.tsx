@@ -120,7 +120,7 @@ const SakiAssistant: React.FC<Props> = ({ isOpen = false, includeBalanceSheet = 
   return (
     <div className="saki-root">
       <div className="saki-header">
-        <h2 className="saki-title">Saki Financial Insights</h2>
+        <h2 className="saki-title">Financial Insights</h2>
         <button className="saki-refresh-btn" onClick={loadAnalysis} disabled={loading} aria-label="Refresh analysis">
           {loading ? '⟳ Loading…' : '⟳ Refresh'}
         </button>

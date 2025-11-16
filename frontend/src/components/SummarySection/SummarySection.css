@@ -82,7 +82,7 @@
 /* fill */
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #7b4df0 0%, #c69df7 100%);
+  background: linear-gradient(90deg, #2ecc71 0%, #7be5c9 100%);
   transition: width 600ms ease;
   border-radius: 999px 0 0 999px;
   box-shadow: 0 4px 10px rgba(121,72,204,0.18);
@@ -634,7 +634,7 @@
   font-weight: 700;
 }
 .hbar-fill.assets {
-  background: linear-gradient(90deg, #5aa8ff 0%, #8ecbff 100%);
+  background: linear-gradient(90deg, var(--color-gold) 0%, color-mix(in srgb, var(--color-gold) 80%, white) 100%);
   box-shadow: 0 6px 18px rgba(90,168,255,0.12);
   height: 100%;
 }
