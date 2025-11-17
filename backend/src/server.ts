@@ -12,6 +12,7 @@ import aiRoutes from './routes/ai.routes';
 import balanceSheetRoutes from './routes/balanceSheet.routes';
 import adminRoutes from './routes/admin.routes';
 import currencyRoutes from './routes/currency.routes';
+import eventRoutes from './routes/event.routes';
 import { errorHandler } from './middleware/errorHandler.middleware';
 
 // Load environment variables from .env file
@@ -72,6 +73,9 @@ app.use('/api/ai', aiRoutes);
 
 // Mount balance sheet routes
 app.use('/api', balanceSheetRoutes);
+
+// Mount event routes (immutable financial history)
+app.use('/api/events', eventRoutes);
 
 // Mount other API routes
 app.use('/api', routes);

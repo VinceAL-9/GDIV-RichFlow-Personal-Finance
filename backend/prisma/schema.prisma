@@ -21,6 +21,7 @@ model User {
   CashSavings         CashSavings?
   IncomeStatement     IncomeStatement?
   Session             Session[]
+  Event               Event[]
   PreferredCurrency   Currency         @relation(fields: [preferredCurrencyId], references: [id])
 }
 
@@ -95,4 +96,21 @@ model Currency {
   cur_symbol String
   cur_name  String
   User      User[]
+}
+
+model Event {
+  id             Int      @id @default(autoincrement())
+  timestamp      DateTime @default(now())
+  actionType     String   // CREATE, UPDATE, DELETE
+  entityType     String   // INCOME, EXPENSE, ASSET, LIABILITY
+  entitySubtype  String?  // For income: EARNED, PORTFOLIO, PASSIVE
+  beforeValue    String?  // JSON string of before state
+  afterValue     String?  // JSON string of after state
+  userId         Int
+  entityId       Int      // ID of the affected entity
+  User           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([entityType])
+  @@index([entityId])
 }

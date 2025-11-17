@@ -1,4 +1,6 @@
 import prisma from '../config/database.config';
+import { logAssetEvent, logLiabilityEvent } from './event.service';
+import { ActionType } from '../types/event.types';
 
 interface AssetData {
   name: string;
@@ -88,13 +90,27 @@ export async function addAsset(userId: number, data: AssetData) {
   }
 
   // Create asset
-  return await prisma.asset.create({
+  const newAsset = await prisma.asset.create({
     data: {
       name: data.name,
       value: data.value,
       bsId: balanceSheet.id
     }
   });
+
+  // Log the CREATE event
+  await logAssetEvent(
+    ActionType.CREATE,
+    userId,
+    newAsset.id,
+    undefined,
+    {
+      name: newAsset.name,
+      value: newAsset.value
+    }
+  );
+
+  return newAsset;
 }
 
 /**
@@ -116,14 +132,34 @@ export async function updateAsset(userId: number, assetId: number, data: AssetDa
     throw new Error('Asset not found or unauthorized');
   }
 
+  // Capture before state
+  const beforeValue = {
+    name: asset.name,
+    value: asset.value
+  };
+
   // Update asset
-  return await prisma.asset.update({
+  const updatedAsset = await prisma.asset.update({
     where: { id: assetId },
     data: {
       name: data.name,
       value: data.value
     }
   });
+
+  // Log the UPDATE event
+  await logAssetEvent(
+    ActionType.UPDATE,
+    userId,
+    assetId,
+    beforeValue,
+    {
+      name: updatedAsset.name,
+      value: updatedAsset.value
+    }
+  );
+
+  return updatedAsset;
 }
 
 /**
@@ -145,10 +181,27 @@ export async function deleteAsset(userId: number, assetId: number) {
     throw new Error('Asset not found or unauthorized');
   }
 
+  // Capture before state for event log
+  const beforeValue = {
+    name: asset.name,
+    value: asset.value
+  };
+
   // Delete asset
-  return await prisma.asset.delete({
+  const deletedAsset = await prisma.asset.delete({
     where: { id: assetId }
   });
+
+  // Log the DELETE event (entity is deleted but event remains)
+  await logAssetEvent(
+    ActionType.DELETE,
+    userId,
+    assetId,
+    beforeValue,
+    undefined
+  );
+
+  return deletedAsset;
 }
 
 /**
@@ -185,13 +238,27 @@ export async function addLiability(userId: number, data: LiabilityData) {
   }
 
   // Create liability
-  return await prisma.liability.create({
+  const newLiability = await prisma.liability.create({
     data: {
       name: data.name,
       value: data.value,
       bsId: balanceSheet.id
     }
   });
+
+  // Log the CREATE event
+  await logLiabilityEvent(
+    ActionType.CREATE,
+    userId,
+    newLiability.id,
+    undefined,
+    {
+      name: newLiability.name,
+      value: newLiability.value
+    }
+  );
+
+  return newLiability;
 }
 
 /**
@@ -213,14 +280,34 @@ export async function updateLiability(userId: number, liabilityId: number, data:
     throw new Error('Liability not found or unauthorized');
   }
 
+  // Capture before state
+  const beforeValue = {
+    name: liability.name,
+    value: liability.value
+  };
+
   // Update liability
-  return await prisma.liability.update({
+  const updatedLiability = await prisma.liability.update({
     where: { id: liabilityId },
     data: {
       name: data.name,
       value: data.value
     }
   });
+
+  // Log the UPDATE event
+  await logLiabilityEvent(
+    ActionType.UPDATE,
+    userId,
+    liabilityId,
+    beforeValue,
+    {
+      name: updatedLiability.name,
+      value: updatedLiability.value
+    }
+  );
+
+  return updatedLiability;
 }
 
 /**
@@ -242,8 +329,25 @@ export async function deleteLiability(userId: number, liabilityId: number) {
     throw new Error('Liability not found or unauthorized');
   }
 
+  // Capture before state for event log
+  const beforeValue = {
+    name: liability.name,
+    value: liability.value
+  };
+
   // Delete liability
-  return await prisma.liability.delete({
+  const deletedLiability = await prisma.liability.delete({
     where: { id: liabilityId }
   });
+
+  // Log the DELETE event (entity is deleted but event remains)
+  await logLiabilityEvent(
+    ActionType.DELETE,
+    userId,
+    liabilityId,
+    beforeValue,
+    undefined
+  );
+
+  return deletedLiability;
 }

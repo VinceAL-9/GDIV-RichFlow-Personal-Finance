@@ -4,10 +4,9 @@
   "main": "server.js",
   "scripts": {
     "devStart": "nodemon ./backend/server.ts",
-    "dev": "nodemon ./src/server.ts"
-  },
-  "prisma": {
-    "seed": "ts-node prisma/seed.currency.ts"
+    "dev": "nodemon ./src/server.ts",
+    "seed-currency": "ts-node prisma/seed.currency.ts",
+    "seed-users": "ts-node prisma/seed.users.ts"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
