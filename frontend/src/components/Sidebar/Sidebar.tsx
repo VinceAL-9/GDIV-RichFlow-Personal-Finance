@@ -80,6 +80,11 @@ const Sidebar: React.FC<Props> = ({ onOpenAssistant }) => {
           <div className="sidebar-button large"></div>
           <span className="sidebar-text"> Saki Assistant </span>
         </button>
+
+        <button className="selection large" onClick={() => { navigate('/analysis'); setMobileOpen(false); }}> 
+          <div className="sidebar-button large"></div>
+          <span className="sidebar-text"> Analysis </span>
+        </button>
       </div>
 
       {/* Settings Section */}
