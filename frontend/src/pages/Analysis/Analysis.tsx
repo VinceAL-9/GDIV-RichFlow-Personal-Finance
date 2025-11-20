@@ -2,6 +2,7 @@ import React from 'react';
 import './Analysis.css';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import '../../components/Header/Header.css';
+import Header from '../../components/Header/Header';
 import { useAuth } from '../../context/AuthContext';
 
 type SnapshotItem = { label: string; value: string };
@@ -53,25 +54,12 @@ const Analysis: React.FC = () => {
 
   return (
     <div className="analysis-layout">
-      <Sidebar />
-      <main className="analysis-main" aria-labelledby="analysis-title">
-        {/* Top header styled like Dashboard */}
-        <header className="header">
-          <div className="header-left">
-            <div className="logo">
-              <div className="logo-circle"><img src="../../../assets/richflow.png" alt="RichFlow Logo" className="logo-icon" /></div>
-              <div className="flex flex-col">
-                <span className="logo-text">{user?.name}</span>
-                {user?.email && <span className="text-white text-sm opacity-80">{user.email}</span>}
-              </div>
-            </div>
-          </div>
-          <div className="header-center">
-            <h1 id="analysis-title" className="header-title">Analysis</h1>
-          </div>
-          <div className="header-right" />
-        </header>
-        <div className="analysis-spacer" />
+      {/* Full-width header like dashboard */}
+      <Header title="Analysis" hideActions />
+      <div className="analysis-body">
+        <Sidebar />
+        <main className="analysis-main" aria-labelledby="analysis-title">
+          <div className="analysis-spacer" />
 
         {loading && (
           <div className="analysis-loading" role="status" aria-live="polite">
@@ -216,7 +204,8 @@ const Analysis: React.FC = () => {
             </section>
           </div>
         )}
-      </main>
+        </main>
+      </div>
     </div>
   );
 };
