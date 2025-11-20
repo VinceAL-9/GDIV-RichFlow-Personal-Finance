@@ -139,6 +139,7 @@
 @media (max-width: 768px) {
   .users-table-container {
     max-height: calc(100vh - 150px);
+    padding: 0.5rem;
   }
   
   /* Convert table to card layout on mobile */
@@ -173,17 +174,20 @@
     align-items: center;
     padding: 0.75rem 0;
     border-bottom: 1px solid #3a3a3a;
+    text-align: left;
   }
   
   .users-table td:last-child {
     border-bottom: none;
+    padding-top: 1rem;
   }
   
   .users-table td::before {
     content: attr(data-label);
     font-weight: 600;
     color: #ffffff;
-    flex: 0 0 40%;
+    flex: 0 0 45%;
+    font-size: 13px;
   }
   
   .users-table td > * {
@@ -193,8 +197,34 @@
   
   .action-btn {
     min-height: 44px;
-    min-width: 44px;
-    padding: 8px 12px;
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+@media (max-width: 480px) {
+  .users-table-container {
+    padding: 0.25rem;
+  }
+  
+  .users-table tbody tr {
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .users-table td {
+    padding: 0.5rem 0;
+    font-size: 12px;
+  }
+  
+  .users-table td::before {
+    font-size: 12px;
+    flex: 0 0 40%;
+  }
+  
+  .action-btn {
+    padding: 8px 10px;
+    font-size: 12px;
   }
 }
 
