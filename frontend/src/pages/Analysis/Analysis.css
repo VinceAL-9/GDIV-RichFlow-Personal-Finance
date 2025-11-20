@@ -22,11 +22,13 @@
     flex-direction: column;
     color: var(--analysis-text);
     background: var(--analysis-bg);
-    min-height: 100vh;
-    font-family: system-ui, sans-serif;
+    height: 100vh;
+    width: 100vw;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
-.analysis-body { display:flex; flex:1; min-height:0; }
+.analysis-body { display:flex; flex:1; overflow: hidden; }
 .analysis-main { flex:1; padding: 2rem 2.5rem; overflow-y:auto; box-sizing:border-box; }
 
 .analysis-spacer { height: 1rem; }
@@ -65,7 +67,6 @@
     position: relative;
     box-shadow: var(--analysis-shadow);
     display:flex; flex-direction:column; gap:.85rem;
-    max-height: calc(100vh - 180px);
     overflow-y: auto;
 }
 .analysis-section:before {
@@ -81,6 +82,31 @@
     mask-composite: exclude;
     pointer-events: none; /* allow interaction with underlying controls */
     z-index: 0;
+}
+
+/* Custom Scrollbar Styling for Analysis Sections */
+.analysis-section::-webkit-scrollbar {
+    width: 8px;
+}
+
+.analysis-section::-webkit-scrollbar-track {
+    background: #0f0f0f;
+    border-radius: 10px;
+}
+
+.analysis-section::-webkit-scrollbar-thumb {
+    background: var(--analysis-gradient);
+    border-radius: 10px;
+    border: 1px solid #0f0f0f;
+}
+
+.analysis-section::-webkit-scrollbar-thumb:hover {
+    filter: brightness(1.1);
+}
+
+.analysis-section {
+    scrollbar-width: thin;
+    scrollbar-color: #7345AF #0f0f0f;
 }
 
 .section-header { display:flex; flex-direction:column; gap:.35rem; }

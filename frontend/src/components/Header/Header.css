@@ -6,7 +6,8 @@
   background-color: #1E1E1E;
   border-bottom: 2px solid #2a2a2a;
   height: 80px;
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 999;
 }
 

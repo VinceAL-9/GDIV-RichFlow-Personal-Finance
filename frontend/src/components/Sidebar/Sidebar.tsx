@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import CurrencySelector from '../CurrencySelector/CurrencySelector';
 import './Sidebar.css';
@@ -13,7 +13,13 @@ const Sidebar: React.FC<Props> = ({ onOpenAssistant }) => {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [showCurrencyModal, setShowCurrencyModal] = React.useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { logout } = useAuth();
+
+  // Determine if we're on the analysis page
+  const isAnalysisPage = location.pathname === '/analysis';
+  const dynamicPageLabel = isAnalysisPage ? 'Dashboard' : 'Analysis';
+  const dynamicPageRoute = isAnalysisPage ? '/dashboard' : '/analysis';
 
   const handleLogout = async () => {
     try {
@@ -81,9 +87,9 @@ const Sidebar: React.FC<Props> = ({ onOpenAssistant }) => {
           <span className="sidebar-text"> Saki Assistant </span>
         </button>
 
-        <button className="selection large" onClick={() => { navigate('/analysis'); setMobileOpen(false); }}> 
+        <button className="selection large" onClick={() => { navigate(dynamicPageRoute); setMobileOpen(false); }}> 
           <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> Analysis </span>
+          <span className="sidebar-text"> {dynamicPageLabel} </span>
         </button>
       </div>
 
