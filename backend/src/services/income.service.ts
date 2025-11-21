@@ -1,4 +1,6 @@
 import prisma from '../config/database.config';
+import { logIncomeEvent } from './event.service';
+import { ActionType } from '../types/event.types';
 
 interface IncomeLineData {
   name: string;
@@ -53,7 +55,7 @@ export async function addIncomeLine(userId: number, data: IncomeLineData) {
   }
 
   // Create income line
-  return await prisma.incomeLine.create({
+  const newIncomeLine = await prisma.incomeLine.create({
     data: {
       name: data.name,
       amount: data.amount,
@@ -61,6 +63,21 @@ export async function addIncomeLine(userId: number, data: IncomeLineData) {
       isId: incomeStatement.id // Link to income statement
     }
   });
+
+  // Log the CREATE event
+  await logIncomeEvent(
+    ActionType.CREATE,
+    userId,
+    newIncomeLine.id,
+    undefined,
+    {
+      name: newIncomeLine.name,
+      amount: newIncomeLine.amount,
+      type: newIncomeLine.type
+    }
+  );
+
+  return newIncomeLine;
 }
 
 /**
@@ -82,8 +99,15 @@ export async function updateIncomeLine(userId: number, incomeLineId: number, dat
     return null;
   }
 
+  // Capture before state
+  const beforeValue = {
+    name: incomeLine.name,
+    amount: incomeLine.amount,
+    type: incomeLine.type
+  };
+
   // Update the income line
-  return await prisma.incomeLine.update({
+  const updatedIncomeLine = await prisma.incomeLine.update({
     where: { id: incomeLineId },
     data: {
       name: data.name,
@@ -91,6 +115,21 @@ export async function updateIncomeLine(userId: number, incomeLineId: number, dat
       type: data.type
     }
   });
+
+  // Log the UPDATE event
+  await logIncomeEvent(
+    ActionType.UPDATE,
+    userId,
+    incomeLineId,
+    beforeValue,
+    {
+      name: updatedIncomeLine.name,
+      amount: updatedIncomeLine.amount,
+      type: updatedIncomeLine.type
+    }
+  );
+
+  return updatedIncomeLine;
 }
 
 /**
@@ -112,10 +151,26 @@ export async function deleteIncomeLine(userId: number, incomeLineId: number) {
     return null;
   }
 
+  // Capture before state for event log
+  const beforeValue = {
+    name: incomeLine.name,
+    amount: incomeLine.amount,
+    type: incomeLine.type
+  };
+
   // Delete the income line
   await prisma.incomeLine.delete({
     where: { id: incomeLineId }
   });
+
+  // Log the DELETE event (entity is deleted but event remains)
+  await logIncomeEvent(
+    ActionType.DELETE,
+    userId,
+    incomeLineId,
+    beforeValue,
+    undefined
+  );
 
   return true;
 }

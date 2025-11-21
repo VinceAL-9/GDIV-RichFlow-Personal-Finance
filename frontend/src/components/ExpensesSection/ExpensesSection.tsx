@@ -7,11 +7,13 @@ import './ExpensesSection.css';
 const ExpenseSection: React.FC = () => {
   const { user } = useAuth();
   const currency = user?.preferredCurrency;
-  const { expenses, loading, error, addExpense: addExpenseToHook, deleteExpense: deleteExpenseFromHook } = useExpenses();
+  const { expenses, loading, error, addExpense: addExpenseToHook, deleteExpense: deleteExpenseFromHook, updateExpense } = useExpenses();
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
+  const [isUpdating, setIsUpdating] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   const handleAddExpense = async () => {
     if (!name.trim() || !amount.trim() || isAdding) return;
@@ -26,6 +28,34 @@ const ExpenseSection: React.FC = () => {
     } finally {
       setIsAdding(false);
     }
+  };
+
+  const handleEditExpense = (id: number, expenseName: string, expenseAmount: number) => {
+    setEditingId(id);
+    setName(expenseName);
+    setAmount(expenseAmount.toString());
+  };
+
+  const handleUpdateExpense = async () => {
+    if (!editingId || !name.trim() || !amount.trim() || isUpdating !== null) return;
+
+    try {
+      setIsUpdating(editingId);
+      await updateExpense(editingId, name, parseFloat(amount));
+      setEditingId(null);
+      setName('');
+      setAmount('');
+    } catch (err: any) {
+      // Error is handled in hook
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setName('');
+    setAmount('');
   };
 
   const handleDeleteExpense = async (id: number) => {
@@ -61,13 +91,23 @@ const ExpenseSection: React.FC = () => {
               <span className="expense-amount">
                 {formatCurrency(typeof item.amount === 'number' ? item.amount : 0, currency)}
               </span>
-              <button
-                className="delete-btn"
-                onClick={() => handleDeleteExpense(item.id)}
-                disabled={isDeleting === item.id}
-              >
-                {isDeleting === item.id ? '...' : '✕'}
-              </button>
+              <div className="expense-item-actions">
+                <button
+                  className="edit-btn"
+                  onClick={() => handleEditExpense(item.id, item.name, item.amount)}
+                  disabled={editingId !== null || isDeleting !== null}
+                  title="Edit"
+                >
+                  Edit
+                </button>
+                <button
+                  className="delete-btn"
+                  onClick={() => handleDeleteExpense(item.id)}
+                  disabled={isDeleting === item.id || editingId !== null}
+                >
+                  {isDeleting === item.id ? '...' : '✕'}
+                </button>
+              </div>
             </div>
           ))
         )}
@@ -87,13 +127,32 @@ const ExpenseSection: React.FC = () => {
           />
         </div>
 
-        <button 
-          className="add-expense-btn" 
-          onClick={handleAddExpense}
-          disabled={isAdding || !name.trim() || !amount.trim()}
-        >
-          {isAdding ? 'Adding...' : '+ Add Expense'}
-        </button>
+        {editingId !== null ? (
+          <div className="expense-edit-actions">
+            <button 
+              className="save-btn" 
+              onClick={handleUpdateExpense}
+              disabled={isUpdating !== null || !name.trim() || !amount.trim()}
+            >
+              {isUpdating === editingId ? 'Saving...' : 'Save'}
+            </button>
+            <button 
+              className="cancel-btn" 
+              onClick={handleCancelEdit}
+              disabled={isUpdating !== null}
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button 
+            className="add-expense-btn" 
+            onClick={handleAddExpense}
+            disabled={isAdding || !name.trim() || !amount.trim()}
+          >
+            {isAdding ? 'Adding...' : '+ Add Expense'}
+          </button>
+        )}
       </div>
     </div>
   );

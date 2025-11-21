@@ -22,6 +22,8 @@ const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
   const [error, setError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
+  const [isUpdating, setIsUpdating] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   // Fetch assets data on component mount
   useEffect(() => {
@@ -67,6 +69,44 @@ const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
     }
   };
 
+  // handle edit asset
+  const handleEdit = (id: number, name: string, value: number) => {
+    setEditingId(id);
+    setAssetName(name);
+    setAssetAmount(value.toString());
+  };
+
+  // handle update asset
+  const handleUpdate = async () => {
+    if (!editingId || !assetName.trim() || !assetAmount.trim() || isUpdating !== null) return;
+
+    try {
+      setIsUpdating(editingId);
+      setError(null);
+      const response = await assetsAPI.updateAsset(editingId, assetName, parseFloat(assetAmount));
+      const updatedItem: AssetItem = response.asset || response;
+      const updated = assets.map((i) => i.id === editingId ? updatedItem : i);
+      setAssets(updated);
+      const total = updated.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
+      onTotalsChange?.(total);
+      setEditingId(null);
+      setAssetName("");
+      setAssetAmount("");
+    } catch (err: any) {
+      console.error("Error updating asset:", err);
+      setError("Failed to update asset");
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
+  // handle cancel edit
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setAssetName("");
+    setAssetAmount("");
+  };
+
   // handle delete asset
   const handleDelete = async (id: number) => {
     if (isDeleting !== null) return;
@@ -92,9 +132,13 @@ const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await handleAddAsset(assetName, assetAmount);
-    setAssetName("");
-    setAssetAmount("");
+    if (editingId !== null) {
+      await handleUpdate();
+    } else {
+      await handleAddAsset(assetName, assetAmount);
+      setAssetName("");
+      setAssetAmount("");
+    }
   };
 
   if (loading) {
@@ -115,13 +159,23 @@ const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
             <div key={item.id} className="asset-item">
               <span>{item.name}</span>
               <span>{formatCurrency(typeof item.value === "number" ? item.value : 0, currency)}</span>
-              <button
-                className="delete-btn"
-                onClick={() => handleDelete(item.id)}
-                disabled={isDeleting === item.id}
-              >
-                ✕
-              </button>
+              <div className="asset-item-actions">
+                <button
+                  className="edit-btn"
+                  onClick={() => handleEdit(item.id, item.name, item.value)}
+                  disabled={editingId !== null || isDeleting !== null}
+                  title="Edit"
+                >
+                  Edit
+                </button>
+                <button
+                  className="delete-btn"
+                  onClick={() => handleDelete(item.id)}
+                  disabled={isDeleting === item.id || editingId !== null}
+                >
+                  ✕
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -141,11 +195,32 @@ const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
           step="0.01"
           value={assetAmount}
           onChange={(e) => setAssetAmount(e.target.value)}
-          disabled={isAdding}
+          disabled={isAdding || isUpdating !== null}
         />
-        <button type="submit" disabled={isAdding}>
-          {isAdding ? "Adding..." : "Add Asset"}
-        </button>
+        {editingId !== null ? (
+          <div className="asset-edit-actions">
+            <button 
+              type="button" 
+              className="save-btn"
+              onClick={handleUpdate}
+              disabled={isUpdating !== null || !assetName.trim() || !assetAmount.trim()}
+            >
+              {isUpdating === editingId ? "Saving..." : "Save"}
+            </button>
+            <button 
+              type="button" 
+              className="cancel-btn"
+              onClick={handleCancelEdit}
+              disabled={isUpdating !== null}
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button type="submit" disabled={isAdding}>
+            {isAdding ? "Adding..." : "Add Asset"}
+          </button>
+        )}
       </form>
     </div>
   );

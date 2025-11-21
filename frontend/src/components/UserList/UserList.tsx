@@ -26,8 +26,8 @@ const UserList: React.FC<UserListProps> = ({ users, currentUserId, onEdit, onDel
             <th>ID</th>
             <th>Name</th>
             <th>Email</th>
-            <th>Last Online</th>
-            <th>Joined Date</th>
+            <th>Date of Creation</th>
+            <th>Last Login</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -45,16 +45,16 @@ const UserList: React.FC<UserListProps> = ({ users, currentUserId, onEdit, onDel
                 className={onUserClick ? 'clickable-row' : ''}
                 onClick={() => onUserClick?.(user.id, user.name)}
               >
-                <td>{user.id}</td>
-                <td>{user.name}</td>
-                <td>{user.email}</td>
-                <td>
+                <td data-label="ID">{user.id}</td>
+                <td data-label="Name">{user.name}</td>
+                <td data-label="Email">{user.email}</td>
+                <td data-label="Date of Creation">
                   {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                 </td>
-                <td>
+                <td data-label="Last Login">
                   {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}
                 </td>
-                <td>
+                <td data-label="Actions">
                   {user.id !== currentUserId ? (
                     <button 
                       className="action-btn user-list-delete-btn"

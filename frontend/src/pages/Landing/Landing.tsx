@@ -65,21 +65,21 @@ const Landing: React.FC = () => {
       </header>
 
       {/* Hero Section */}
-      <main style={{ minHeight: 'calc(100vh - 96px)' }} className="flex items-center justify-center px-8 py-20">
+      <main style={{ minHeight: 'calc(100vh - 96px)' }} className="flex items-center justify-center px-4 sm:px-8 py-12 sm:py-20">
         <div className="max-w-5xl mx-auto text-center">
           {/* Main Headline */}
-          <h1 className="text-6xl md:text-7xl font-bold text-gold mb-8 leading-tight">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gold mb-4 sm:mb-6 md:mb-8 leading-tight">
             See Where Your <span className="text-white">Money Flows</span> — and Make It Work for You.
           </h1>
           
           {/* Subheadline */}
-          <p className="text-2xl text-gold italic font-light mb-12 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gold italic font-light mb-8 sm:mb-10 md:mb-12 max-w-3xl mx-auto px-4">
             Understand where your money goes and learn how to make it work toward your financial goals.
           </p>
           
           {/* CTA Button */}
             <button onClick={() => navigate('/signup')}
-            className="text-gold px-12 py-5 rounded-2xl ctext-3xl font-bold hover:bg-opacity-80 transition shadow-lg cta-button"
+            className="text-gold px-6 sm:px-10 md:px-12 py-3 sm:py-4 md:py-5 rounded-2xl text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold hover:bg-opacity-80 transition shadow-lg cta-button"
             style={{ background: 'linear-gradient(to bottom right, #7345AF, #7345AF, #1E1E1E, #000000)' }}
             >
             Get Started

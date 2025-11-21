@@ -1,4 +1,6 @@
 import prisma from '../config/database.config';
+import { logCashSavingsEvent } from './event.service';
+import { ActionType } from '../types/event.types';
 
 /**
  * Get cash savings for a specific user
@@ -30,7 +32,7 @@ export async function updateCashSavings(userId: number, amount: number) {
 
   if (!existing) {
     // Create if doesn't exist (shouldn't happen if signup creates it)
-    return await prisma.cashSavings.create({
+    const newCashSavings = await prisma.cashSavings.create({
       data: {
         userId,
         amount
@@ -41,10 +43,26 @@ export async function updateCashSavings(userId: number, amount: number) {
         userId: true
       }
     });
+
+    // Log CREATE event
+    await logCashSavingsEvent(
+      ActionType.CREATE,
+      userId,
+      newCashSavings.id,
+      undefined,
+      { amount: newCashSavings.amount }
+    );
+
+    return newCashSavings;
   }
 
+  // Capture before state
+  const beforeValue = {
+    amount: existing.amount
+  };
+
   // Update existing record
-  return await prisma.cashSavings.update({
+  const updatedCashSavings = await prisma.cashSavings.update({
     where: { userId },
     data: { amount },
     select: {
@@ -53,4 +71,15 @@ export async function updateCashSavings(userId: number, amount: number) {
       userId: true
     }
   });
+
+  // Log UPDATE event
+  await logCashSavingsEvent(
+    ActionType.UPDATE,
+    userId,
+    updatedCashSavings.id,
+    beforeValue,
+    { amount: updatedCashSavings.amount }
+  );
+
+  return updatedCashSavings;
 }

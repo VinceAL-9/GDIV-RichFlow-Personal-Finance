@@ -7,9 +7,11 @@ interface HeaderProps {
   onToggleBalanceSheet?: (show: boolean) => void;
   balanceSheetExists?: boolean;
   balanceSheetVisible?: boolean;
+  title?: string;
+  hideActions?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ onAddBalanceSheet, onToggleBalanceSheet, balanceSheetExists, balanceSheetVisible = false }) => {
+const Header: React.FC<HeaderProps> = ({ onAddBalanceSheet, onToggleBalanceSheet, balanceSheetExists, balanceSheetVisible = false, title = 'Dashboard', hideActions = false }) => {
   const { user } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -46,36 +48,38 @@ const Header: React.FC<HeaderProps> = ({ onAddBalanceSheet, onToggleBalanceSheet
   }, [isDropdownOpen]);
   
   return (
-    <header className="header">
+    <header className={`header ${hideActions ? 'no-actions' : ''}`}>
       <div className="header-left">
         <div className="logo">
           <div className="logo-circle max-h-fit"><img src="../../../assets/richflow.png" alt="RichFlow Logo" className="logo-icon" /></div>
           <div className="flex flex-col">
             <span className="logo-text">{user!.name}</span>
-            <span className="text-white text-sm opacity-80">{user!.email}</span>
+            <span className="text-white" style={{ fontSize: '0.875rem', opacity: 0.8 }}>{user!.email}</span>
           </div>
         </div>
       </div>
       <div className="header-center">
-        <h1 className="header-title">Dashboard</h1>
+        <h1 className="header-title">{title}</h1>
       </div>
       <div className="header-right">
-        <div className="add-button-container" ref={dropdownRef}>
-          <button 
-            className={`add-button ${balanceSheetExists ? 'minus-button' : ''}`} 
-            onClick={toggleDropdown} 
-            title={balanceSheetExists ? "Modify Balance Sheet" : "Add new item"}
-          >
-            {balanceSheetExists ? '-' : '+'}
-          </button>
-          {isDropdownOpen && (
-            <div className="dropdown-menu">
-              <button className="dropdown-item" onClick={handleBalanceSheetAction}>
-                {balanceSheetExists ? (balanceSheetVisible ? 'Hide Balance Sheet' : 'Show Balance Sheet') : 'Add Balance Sheet'}
-              </button>
-            </div>
-          )}
-        </div>
+        {!hideActions && (
+          <div className="add-button-container" ref={dropdownRef}>
+            <button
+              className={`add-button ${balanceSheetExists ? 'minus-button' : ''}`}
+              onClick={toggleDropdown}
+              title={balanceSheetExists ? 'Modify Balance Sheet' : 'Add new item'}
+            >
+              {balanceSheetExists ? '-' : '+'}
+            </button>
+            {isDropdownOpen && (
+              <div className="dropdown-menu">
+                <button className="dropdown-item" onClick={handleBalanceSheetAction}>
+                  {balanceSheetExists ? (balanceSheetVisible ? 'Hide Balance Sheet' : 'Show Balance Sheet') : 'Add Balance Sheet'}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </header>
   );

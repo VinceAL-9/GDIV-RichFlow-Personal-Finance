@@ -101,25 +101,24 @@ const Signup: React.FC = () => {
 
   return (
     <div 
-      className="text-white w-screen h-screen flex items-center justify-center" 
+      className="text-white w-screen h-screen flex items-center justify-center px-4" 
       style={{ background: 'linear-gradient(to bottom right, #7345AF, #7345AF, #1E1E1E, #000000)' }}
     >
       <div 
-        className="bg-opacity-60 backdrop-blur-sm rounded-lg flex items-center justify-center flex-col gap-7 p-8" 
+        className="bg-opacity-60 backdrop-blur-sm rounded-lg flex items-center justify-center flex-col gap-7 p-6 sm:p-8 w-full max-w-md mx-auto" 
         style={{ 
           backgroundColor: '#171717',
-          width: '40vw',
-          height: '80vh',
+          minHeight: '600px',
           boxSizing: 'border-box'
         }}
       >
         {/* Box */}
-        <form onSubmit={handleSubmit} className="bg-opacity-60 w-full h-full flex items-center justify-center flex-col gap-5 backdrop-blur-sm p-8 max-w-md mx-auto rounded bg-#171717">
-          <div className="flex items-center gap-3 mb-8 justify-center">
-            <div className="w-12 h-12 bg-dark rounded-full flex items-center justify-center">
+        <form onSubmit={handleSubmit} className="bg-opacity-60 w-full flex items-center justify-center flex-col gap-5 backdrop-blur-sm p-4 sm:p-8 rounded bg-#171717">
+          <div className="flex items-center gap-3 mb-4 sm:mb-8 justify-center">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-dark rounded-full flex items-center justify-center">
               <img src="./assets/richflow.png" alt="RichFlow Logo" />
             </div>
-            <span className="text-5xl font-bold text-gold">RichFlow</span>
+            <span className="text-3xl sm:text-5xl font-bold text-gold">RichFlow</span>
           </div>
           
           {/* Error Message */}
@@ -174,7 +173,7 @@ const Signup: React.FC = () => {
             <button 
               type="submit"
               disabled={loading}
-              className="bg-purple w-[150px] h-[50px] text-gold px-8 py-3 rounded-2xl font-bold text-lg hover:bg-opacity-90 transition btn-hover-effect disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-purple w-full sm:w-[150px] h-[50px] text-gold px-8 py-3 rounded-2xl font-bold text-lg hover:bg-opacity-90 transition btn-hover-effect disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating...' : 'Sign Up'}
             </button>

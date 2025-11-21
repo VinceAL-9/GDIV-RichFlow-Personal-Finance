@@ -97,6 +97,26 @@ const addExpenseInternal = async (name: string, amount: number) => {
   }
 };
 
+const updateExpenseInternal = async (id: number, name: string, amount: number) => {
+  try {
+    setState({ error: null });
+    const response = await expensesAPI.updateExpense(id, name, amount);
+    const expenseData = response.expense || response;
+    const updatedExpense: ExpenseItem = {
+      id: expenseData.id,
+      name: expenseData.name,
+      amount: expenseData.amount,
+    };
+    setState({ expenses: store.expenses.map((e) => e.id === id ? updatedExpense : e) });
+    notifyDataChange(); // Notify data change listeners
+    return updatedExpense;
+  } catch (err) {
+    console.error('Error updating expense:', err);
+    setState({ error: 'Failed to update expense' });
+    throw err;
+  }
+};
+
 const deleteExpenseInternal = async (id: number) => {
   try {
     setState({ error: null });
@@ -146,6 +166,7 @@ export const useExpenses = () => {
 
   const fetchExpenses = async () => fetchExpensesInternal();
   const addExpense = async (name: string, amount: number) => addExpenseInternal(name, amount);
+  const updateExpense = async (id: number, name: string, amount: number) => updateExpenseInternal(id, name, amount);
   const deleteExpense = async (id: number) => deleteExpenseInternal(id);
 
   const totalExpenses = local.expenses.reduce((sum, e) => sum + (typeof e.amount === 'number' ? e.amount : parseFloat((e as any).amount)), 0);
@@ -158,6 +179,7 @@ export const useExpenses = () => {
     error: local.error,
     fetchExpenses,
     addExpense,
+    updateExpense,
     deleteExpense,
   };
 };

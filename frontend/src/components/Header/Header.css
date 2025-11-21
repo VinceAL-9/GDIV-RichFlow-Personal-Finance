@@ -6,13 +6,23 @@
   background-color: #1E1E1E;
   border-bottom: 2px solid #2a2a2a;
   height: 80px;
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 999;
+}
+
+@media (max-width: 1024px) {
+  .header {
+    padding: 0.75rem 1rem 0.75rem 4.5rem;
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+  }
 }
 
 @media (max-width: 768px) {
   .header {
-    padding: 0.75rem 1rem 0.75rem 5rem;
+    padding: 0.75rem 1rem 0.75rem 4.5rem;
     height: auto;
     min-height: 56px;
     flex-wrap: wrap;
@@ -21,7 +31,7 @@
 
 @media (max-width: 480px) {
   .header {
-    padding: 0.5rem 0.75rem 0.5rem 4.5rem;
+    padding: 0.5rem 0.75rem 0.5rem 4rem;
   }
 }
 

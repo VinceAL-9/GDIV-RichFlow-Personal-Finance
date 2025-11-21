@@ -94,6 +94,89 @@
   color: #b794e0;
 }
 
+.liability-item-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-btn {
+  background: transparent;
+  border: 1px solid #7345AF;
+  color: #7345AF;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.edit-btn:hover:not(:disabled) {
+  background: transparent;
+  color: #EDCA69;
+  border-color: #EDCA69;
+}
+
+.edit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.liability-edit-actions {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.save-btn,
+.cancel-btn {
+  flex: 1;
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+  min-height: 44px;
+}
+
+.save-btn {
+  background: linear-gradient(135deg, #7345AF 0%, #9d6dd4 100%);
+  color: white;
+  border: none;
+}
+
+.save-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5c3a8f 0%, #7345AF 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(115, 69, 175, 0.3);
+}
+
+.save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cancel-btn {
+  background: transparent;
+  color: #EDCA69;
+  border: 1px solid #EDCA69;
+}
+
+.cancel-btn:hover:not(:disabled) {
+  background: #EDCA69;
+  color: #1a1a2e;
+  transform: translateY(-1px);
+}
+
+.cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .liability-empty {
   text-align: center;
   color: #888;
@@ -190,7 +273,7 @@
   background: none;
   border: none;
   color: #b794e0;
-  font-size: 0.85rem;
+  font-size: 1.1rem;
   cursor: pointer;
   transition: all 0.2s;
   padding: 0.25rem 0.5rem;
@@ -198,11 +281,11 @@
 }
 
 .delete-btn:hover:not(:disabled) {
-  color: #9d6dd4;
-  background-color: rgba(157, 109, 212, 0.1);
+  color: #ff6b6b;
+  background-color: rgba(255, 107, 107, 0.1);
 }
 
 .delete-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }

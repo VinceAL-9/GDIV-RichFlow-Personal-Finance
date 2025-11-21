@@ -1,4 +1,6 @@
 import prisma from '../config/database.config';
+import { logExpenseEvent } from './event.service';
+import { ActionType } from '../types/event.types';
 
 interface ExpenseData {
   name: string;
@@ -61,6 +63,18 @@ export async function addExpense(userId: number, data: ExpenseData) {
       }
     });
     
+    // Log the CREATE event
+    await logExpenseEvent(
+      ActionType.CREATE,
+      userId,
+      newExpense.id,
+      undefined,
+      {
+        name: newExpense.name,
+        amount: newExpense.amount
+      }
+    );
+    
     return newExpense;
   } catch (error) {
     console.error('Error creating expense:', error);
@@ -87,14 +101,34 @@ export async function updateExpense(userId: number, expenseId: number, data: Exp
     return null;
   }
 
+  // Capture before state
+  const beforeValue = {
+    name: expense.name,
+    amount: expense.amount
+  };
+
   // Update the expense
-  return await prisma.expense.update({
+  const updatedExpense = await prisma.expense.update({
     where: { id: expenseId },
     data: {
       name: data.name,
       amount: data.amount
     }
   });
+
+  // Log the UPDATE event
+  await logExpenseEvent(
+    ActionType.UPDATE,
+    userId,
+    expenseId,
+    beforeValue,
+    {
+      name: updatedExpense.name,
+      amount: updatedExpense.amount
+    }
+  );
+
+  return updatedExpense;
 }
 
 /**
@@ -116,10 +150,25 @@ export async function deleteExpense(userId: number, expenseId: number) {
     return null;
   }
 
+  // Capture before state for event log
+  const beforeValue = {
+    name: expense.name,
+    amount: expense.amount
+  };
+
   // Delete the expense
   await prisma.expense.delete({
     where: { id: expenseId }
   });
+
+  // Log the DELETE event (entity is deleted but event remains)
+  await logExpenseEvent(
+    ActionType.DELETE,
+    userId,
+    expenseId,
+    beforeValue,
+    undefined
+  );
 
   return true;
 }

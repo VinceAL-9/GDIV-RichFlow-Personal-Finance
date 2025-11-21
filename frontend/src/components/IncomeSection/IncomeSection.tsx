@@ -24,6 +24,8 @@ const IncomeSection: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
+  const [isUpdating, setIsUpdating] = useState<number | null>(null);
+  const [editingItem, setEditingItem] = useState<IncomeItem | null>(null);
   const { triggerDataUpdate } = useFinancialData();
 
   // Fetch income data on component mount
@@ -142,6 +144,48 @@ const IncomeSection: React.FC = () => {
     }
   };
 
+  // handle update income
+  const handleUpdateIncome = async (id: number, name: string, amount: number, type: 'Earned' | 'Portfolio' | 'Passive') => {
+    if (isUpdating !== null) return;
+    
+    try {
+      setIsUpdating(id);
+      setError(null);
+      const response = await incomeAPI.updateIncomeLine(id, name, amount, type);
+      const updatedItem: IncomeItem = response.incomeLine || response;
+      
+      const section = type.toLowerCase() as "earned" | "portfolio" | "passive";
+      
+      if (section === "earned") {
+        const next = earnedIncome.map((i) => i.id === id ? updatedItem : i);
+        setEarnedIncome(next);
+        const earnedTotal = next.reduce((s, i) => s + i.amount, 0);
+        incomeTotalsStore.set({ earned: earnedTotal });
+      }
+      if (section === "portfolio") {
+        const next = portfolioIncome.map((i) => i.id === id ? updatedItem : i);
+        setPortfolioIncome(next);
+        const portfolioTotal = next.reduce((s, i) => s + i.amount, 0);
+        incomeTotalsStore.set({ portfolio: portfolioTotal });
+      }
+      if (section === "passive") {
+        const next = passiveIncome.map((i) => i.id === id ? updatedItem : i);
+        setPassiveIncome(next);
+        const passiveTotal = next.reduce((sum, item) => sum + item.amount, 0);
+        passiveIncomeStore.set(passiveTotal);
+        incomeTotalsStore.set({ passive: passiveTotal });
+      }
+      
+      setEditingItem(null);
+      triggerDataUpdate();
+    } catch (err: any) {
+      console.error('Error updating income:', err);
+      setError('Failed to update income');
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
   // handle delete income
   const handleDelete = async (section: "earned" | "portfolio" | "passive", id: number) => {
     if (isDeleting !== null) return; // Prevent multiple simultaneous deletes
@@ -195,6 +239,26 @@ const IncomeSection: React.FC = () => {
     const [source, setSource] = useState("");
     const [amount, setAmount] = useState("");
 
+    const handleEdit = (item: IncomeItem) => {
+      setEditingItem(item);
+      setSource(item.name);
+      setAmount(item.amount.toString());
+    };
+
+    const handleSaveEdit = () => {
+      if (editingItem && source.trim() && amount.trim()) {
+        handleUpdateIncome(editingItem.id, source, parseFloat(amount), editingItem.type);
+        setSource("");
+        setAmount("");
+      }
+    };
+
+    const handleCancelEdit = () => {
+      setEditingItem(null);
+      setSource("");
+      setAmount("");
+    };
+
     return (
       <div className="income-card">
         <div className="income-card-header">{title}</div>
@@ -207,13 +271,23 @@ const IncomeSection: React.FC = () => {
               <div key={item.id} className="income-item">
                 <span>{item.name}</span>
                 <span>{formatCurrency(typeof item.amount === 'number' ? item.amount : 0, currency)}</span>
-                <button
-                  className="delete-btn"
-                  onClick={() => handleDelete(section, item.id)}
-                  disabled={isDeleting === item.id}
-                >
-                  {isDeleting === item.id ? '...' : '✕'}
-                </button>
+                <div className="income-item-actions">
+                  <button
+                    className="edit-btn"
+                    onClick={() => handleEdit(item)}
+                    disabled={isUpdating !== null || isDeleting !== null || editingItem !== null}
+                    title="Edit"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="delete-btn"
+                    onClick={() => handleDelete(section, item.id)}
+                    disabled={isDeleting === item.id || editingItem !== null}
+                  >
+                    {isDeleting === item.id ? '...' : '✕'}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -234,17 +308,36 @@ const IncomeSection: React.FC = () => {
           />
         </div>
 
-        <button
-          className="add-btn"
-          onClick={() => {
-            handleAddIncome(section, source, amount);
-            setSource("");
-            setAmount("");
-          }}
-          disabled={isAdding || !source.trim() || !amount.trim()}
-        >
-          {isAdding ? 'Adding...' : `+ Add ${title}`}
-        </button>
+        {editingItem && editingItem.type === (section.charAt(0).toUpperCase() + section.slice(1) as 'Earned' | 'Portfolio' | 'Passive') ? (
+          <div className="income-edit-actions">
+            <button
+              className="save-btn"
+              onClick={handleSaveEdit}
+              disabled={isUpdating !== null || !source.trim() || !amount.trim()}
+            >
+              {isUpdating === editingItem.id ? 'Saving...' : 'Save'}
+            </button>
+            <button
+              className="cancel-btn"
+              onClick={handleCancelEdit}
+              disabled={isUpdating !== null}
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button
+            className="add-btn"
+            onClick={() => {
+              handleAddIncome(section, source, amount);
+              setSource("");
+              setAmount("");
+            }}
+            disabled={isAdding || !source.trim() || !amount.trim() || editingItem !== null}
+          >
+            {isAdding ? 'Adding...' : `+ Add ${title}`}
+          </button>
+        )}
       </div>
     );
   };
