@@ -19,6 +19,7 @@ model User {
   lastLogin           DateTime?
   BalanceSheet        BalanceSheet?
   CashSavings         CashSavings?
+  Event               Event[]
   IncomeStatement     IncomeStatement?
   Session             Session[]
   PreferredCurrency   Currency         @relation(fields: [preferredCurrencyId], references: [id])
@@ -72,6 +73,7 @@ model IncomeLine {
   amount          Float
   type            String
   isId            Int
+  quadrant        String?
   IncomeStatement IncomeStatement @relation(fields: [isId], references: [id], onDelete: Cascade)
 }
 
@@ -91,8 +93,25 @@ model CashSavings {
 }
 
 model Currency {
-  id        Int    @id @default(autoincrement())
+  id         Int    @id @default(autoincrement())
   cur_symbol String
-  cur_name  String
-  User      User[]
+  cur_name   String
+  User       User[]
+}
+
+model Event {
+  id            Int      @id @default(autoincrement())
+  timestamp     DateTime @default(now())
+  actionType    String
+  entityType    String
+  entitySubtype String?
+  beforeValue   String?
+  afterValue    String?
+  userId        Int
+  entityId      Int
+  User          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([entityId])
+  @@index([entityType])
+  @@index([userId])
 }

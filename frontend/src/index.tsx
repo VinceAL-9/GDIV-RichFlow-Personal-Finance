@@ -12,6 +12,7 @@ import ChangeUsername from './pages/ChangeUsername/ChangeUsername';
 import ChangeEmail from './pages/ChangeEmail/ChangeEmail';
 import ChangePassword from './pages/ChangePassword/ChangePassword';
 import Admin from './pages/Admin/Admin';
+import EventLog from './pages/EventLog/EventLog';
 
 const container = document.getElementById('root');
 if (!container) {
@@ -61,6 +62,14 @@ root.render(
             }
           />
           <Route path="/admin" element={<Admin />} />
+          <Route
+            path="/event-log"
+            element={
+              <ProtectedRoute>
+                <EventLog />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
