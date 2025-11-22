@@ -1,10 +1,23 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import * as React from 'react';
+import { JSX, useEffect, useMemo, useState } from 'react';
 import './EventLog.css';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { incomeAPI, assetsAPI, liabilitiesAPI, expensesAPI } from '../../utils/api';
+import { incomeAPI, assetsAPI, liabilitiesAPI, expensesAPI, eventsAPI } from '../../utils/api';
 
-type EventType = 'Income' | 'Expense' | 'Asset' | 'Liability' | 'Removed';
+type EventType = 'INCOME' | 'EXPENSE' | 'ASSET' | 'LIABILITY' | 'CASH_SAVINGS';
+
+interface BackendEvent {
+  id: number;
+  timestamp: string;
+  actionType: 'CREATE' | 'UPDATE' | 'DELETE';
+  entityType: EventType;
+  entitySubtype: string | null;
+  beforeValue: string | null;
+  afterValue: string | null;
+  userId: number;
+  entityId: number;
+}
 
 interface FinancialEvent {
   id: string;
@@ -86,6 +99,9 @@ const saveSnapshot = (key: string, snap: Snapshot) => {
   } catch {}
 };
 
+  actionType: string;
+}
+
 const EventLog: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -98,232 +114,126 @@ const EventLog: React.FC = () => {
   const [endDate, setEndDate] = useState<string>('');
   const [search, setSearch] = useState<string>('');
 
-  const { removedKey, snapKey, deletedKey } = usePerUserKeys(user);
-  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
-
-  // Delete handler
-  const handleDeleteEvent = (id: string) => {
-    setEvents(prev => prev.filter(e => e.id !== id));
-    setDeletedIds(prev => {
-      const next = new Set(prev);
-      next.add(id);
-      saveDeletedIds(deletedKey, next);
-      // If it was a persisted removed event, purge from that storage too
-      const persistedRemoved = loadRemovedEvents(removedKey);
-      if (persistedRemoved.some(ev => ev.id === id)) {
-        const remaining = persistedRemoved.filter(ev => ev.id !== id);
-        saveRemovedEvents(removedKey, remaining);
-      }
-      return next;
-    });
-  };
-
   useEffect(() => {
-    // Initialize deleted IDs on mount
-    setDeletedIds(loadDeletedIds(deletedKey));
-  }, [deletedKey]);
-
-  useEffect(() => {
-    const loadAll = async () => {
+    const loadEvents = async () => {
       setLoading(true);
       setError(null);
       try {
-        // Parallel fetch of financial data
-        const [incomeLinesRaw, assetsRaw, liabilitiesRaw, expensesRaw] = await Promise.all([
-          incomeAPI.getIncomeLines().catch(() => []),
-          assetsAPI.getAssets().catch(() => []),
-          liabilitiesAPI.getLiabilities().catch(() => []),
-          expensesAPI.getExpenses().catch(() => []),
-        ]);
+        // Fetch events from backend
+        const response = await eventsAPI.getEvents({ limit: 1000 });
+        const backendEvents: BackendEvent[] = response.events || [];
 
-        const incomeLines = Array.isArray(incomeLinesRaw) ? incomeLinesRaw : [];
-        const assets = Array.isArray(assetsRaw) ? assetsRaw : [];
-        const liabilities = Array.isArray(liabilitiesRaw) ? liabilitiesRaw : [];
-        const expenses = Array.isArray(expensesRaw) ? expensesRaw : [];
+        // Transform backend events to display format
+        const transformedEvents: FinancialEvent[] = [];
 
-        const buildTimestamp = (item: any): string => {
-          // Prefer createdAt or updatedAt if present; fallback to now
-          return item?.createdAt || item?.updatedAt || new Date().toISOString();
-        };
-
-        const synthesized: FinancialEvent[] = [];
-
-        // Fixed first event: user registration
-        const registrationTs =
-          (user as any)?.createdAt || (user as any)?.created_at || (user as any)?.created || new Date().toISOString();
-        synthesized.push({
+        // Add starting balance event
+        const registrationTs = (user as any)?.createdAt || (user as any)?.created_at || (user as any)?.created || new Date().toISOString();
+        transformedEvents.push({
           id: 'start',
           timestamp: registrationTs,
-          type: 'Asset',
+          type: 'ASSET',
           description: 'Starting Balance',
           valueChange: 0,
+          actionType: 'CREATE',
         });
 
-        // Income (Earned, Portfolio, Passive) all treated as type 'Income'
-        for (const line of incomeLines) {
-          const amount = parseNum(line?.amount);
-          if (isNaN(amount)) continue;
-          const prefix =
-            line.type === 'Earned'
-              ? 'Added Income'
-              : line.type === 'Portfolio'
-              ? 'Added Portfolio'
-              : line.type === 'Passive'
-              ? 'Added Passive'
-              : 'Added Income';
-          synthesized.push({
-            id: `income-${line.id}`,
-            timestamp: buildTimestamp(line),
-            type: 'Income',
-            description: `${prefix}: ${line.name}`,
-            valueChange: Math.abs(amount), // positive
-          });
-        }
-
-        // Assets
-        for (const a of assets) {
-          const value = parseNum(a?.value);
-          if (isNaN(value)) continue;
-          synthesized.push({
-            id: `asset-${a.id}`,
-            timestamp: buildTimestamp(a),
-            type: 'Asset',
-            description: `Added Asset: ${a.name}`,
-            valueChange: Math.abs(value), // positive
-          });
-        }
-
-        // Liabilities (negative)
-        for (const l of liabilities) {
-          const value = parseNum(l?.value);
-          if (isNaN(value)) continue;
-          synthesized.push({
-            id: `liability-${l.id}`,
-            timestamp: buildTimestamp(l),
-            type: 'Liability',
-            description: `Logged Liability: ${l.name}`,
-            valueChange: -Math.abs(value), // negative
-          });
-        }
-
-        // Expenses (negative)
-        for (const e of expenses) {
-          const amount = parseNum(e?.amount);
-          if (isNaN(amount)) continue;
-          synthesized.push({
-            id: `expense-${e.id}`,
-            timestamp: buildTimestamp(e),
-            type: 'Expense',
-            description: `Logged Expense: ${e.name}`,
-            valueChange: -Math.abs(amount), // negative
-          });
-        }
-
-        // Build current snapshot (only for categories requested)
-        const curSnap: Snapshot = {
-          incomes: {},
-          expenses: {},
-          liabilities: {},
-        };
-
-        for (const line of incomeLines) {
-          const amt = parseNum(line?.amount);
-          if (isNaN(amt)) continue;
-          const subtype =
-            line.type === 'Earned' ? 'Earned' : line.type === 'Portfolio' ? 'Portfolio' : 'Passive';
-          curSnap.incomes[String(line.id)] = { subtype, amount: Math.abs(amt) };
-        }
-        for (const l of liabilities) {
-          const val = parseNum(l?.value);
-          if (isNaN(val)) continue;
-          curSnap.liabilities[String(l.id)] = { value: Math.abs(val) };
-        }
-        for (const e of expenses) {
-          const amt = parseNum(e?.amount);
-          if (isNaN(amt)) continue;
-          curSnap.expenses[String(e.id)] = { amount: Math.abs(amt) };
-        }
-
-        // Detect removals vs previous snapshot and persist "Removed" events (never delete those rows)
-        const prevSnap = loadSnapshot(snapKey);
-        const existingRemoved = loadRemovedEvents(removedKey);
-
-        const removedToAdd: FinancialEvent[] = [];
-        if (prevSnap) {
-          // Incomes (subtypes have different dashboard label and sign rule)
-          for (const id of Object.keys(prevSnap.incomes)) {
-            if (!curSnap.incomes[id]) {
-              const prev = prevSnap.incomes[id];
-              const dash =
-                prev.subtype === 'Earned' ? 'Income' : prev.subtype === 'Portfolio' ? 'Portfolio' : 'Passive';
-              const evId = `removed-income-${prev.subtype.toLowerCase()}-${id}`;
-              // Negative for incomes (Income/Portfolio/Passive)
-              removedToAdd.push({
-                id: evId,
-                timestamp: new Date().toISOString(),
-                type: 'Removed',
-                description: `Removed: ${dash}`,
-                valueChange: -Math.abs(prev.amount),
-              });
+        // Transform each backend event
+        for (const event of backendEvents) {
+          const afterData = event.afterValue ? JSON.parse(event.afterValue) : null;
+          const beforeData = event.beforeValue ? JSON.parse(event.beforeValue) : null;
+          
+          let description = '';
+          let valueChange = 0;
+          
+          // Build description based on action type and entity type
+          if (event.actionType === 'CREATE') {
+            const name = afterData?.name || 'Unknown';
+            const amount = afterData?.amount || afterData?.value || 0;
+            
+            if (event.entityType === 'INCOME') {
+              const subtype = event.entitySubtype || afterData?.type || 'Income';
+              description = `Added ${subtype} Income: ${name}`;
+              valueChange = Math.abs(amount);
+            } else if (event.entityType === 'EXPENSE') {
+              description = `Logged Expense: ${name}`;
+              valueChange = -Math.abs(amount);
+            } else if (event.entityType === 'ASSET') {
+              description = `Added Asset: ${name}`;
+              valueChange = Math.abs(amount);
+            } else if (event.entityType === 'LIABILITY') {
+              description = `Logged Liability: ${name}`;
+              valueChange = -Math.abs(amount);
+            } else if (event.entityType === 'CASH_SAVINGS') {
+              description = `Updated Cash Savings`;
+              valueChange = Math.abs(amount);
+            }
+          } else if (event.actionType === 'UPDATE') {
+            const name = afterData?.name || beforeData?.name || 'Unknown';
+            const afterAmount = afterData?.amount || afterData?.value || 0;
+            const beforeAmount = beforeData?.amount || beforeData?.value || 0;
+            const diff = afterAmount - beforeAmount;
+            
+            if (event.entityType === 'INCOME') {
+              const subtype = event.entitySubtype || afterData?.type || 'Income';
+              description = `Updated ${subtype} Income: ${name}`;
+              valueChange = diff;
+            } else if (event.entityType === 'EXPENSE') {
+              description = `Updated Expense: ${name}`;
+              valueChange = -Math.abs(diff);
+            } else if (event.entityType === 'ASSET') {
+              description = `Updated Asset: ${name}`;
+              valueChange = diff;
+            } else if (event.entityType === 'LIABILITY') {
+              description = `Updated Liability: ${name}`;
+              valueChange = -diff;
+            } else if (event.entityType === 'CASH_SAVINGS') {
+              description = `Updated Cash Savings`;
+              valueChange = diff;
+            }
+          } else if (event.actionType === 'DELETE') {
+            const name = beforeData?.name || 'Unknown';
+            const amount = beforeData?.amount || beforeData?.value || 0;
+            
+            if (event.entityType === 'INCOME') {
+              const subtype = event.entitySubtype || beforeData?.type || 'Income';
+              description = `Removed ${subtype} Income: ${name}`;
+              valueChange = -Math.abs(amount);
+            } else if (event.entityType === 'EXPENSE') {
+              description = `Removed Expense: ${name}`;
+              valueChange = Math.abs(amount); // Removing expense is positive
+            } else if (event.entityType === 'ASSET') {
+              description = `Removed Asset: ${name}`;
+              valueChange = -Math.abs(amount);
+            } else if (event.entityType === 'LIABILITY') {
+              description = `Removed Liability: ${name}`;
+              valueChange = Math.abs(amount); // Removing liability is positive
             }
           }
-          // Expenses (positive when removed)
-          for (const id of Object.keys(prevSnap.expenses)) {
-            if (!curSnap.expenses[id]) {
-              const prev = prevSnap.expenses[id];
-              const evId = `removed-expense-${id}`;
-              removedToAdd.push({
-                id: evId,
-                timestamp: new Date().toISOString(),
-                type: 'Removed',
-                description: 'Removed: Expense',
-                valueChange: +Math.abs(prev.amount),
-              });
-            }
-          }
-          // Liabilities (positive when removed)
-          for (const id of Object.keys(prevSnap.liabilities)) {
-            if (!curSnap.liabilities[id]) {
-              const prev = prevSnap.liabilities[id];
-              const evId = `removed-liability-${id}`;
-              removedToAdd.push({
-                id: evId,
-                timestamp: new Date().toISOString(),
-                type: 'Removed',
-                description: 'Removed: Liability',
-                valueChange: +Math.abs(prev.value),
-              });
-            }
-          }
+
+          transformedEvents.push({
+            id: `event-${event.id}`,
+            timestamp: event.timestamp,
+            type: event.entityType,
+            description,
+            valueChange,
+            actionType: event.actionType,
+          });
         }
 
-        // Merge/dedupe removed events (by id) and persist
-        const dedupMap = new Map<string, FinancialEvent>();
-        [...existingRemoved, ...removedToAdd].forEach(ev => {
-          if (!dedupMap.has(ev.id)) dedupMap.set(ev.id, ev);
-        });
-        const mergedRemoved = Array.from(dedupMap.values());
-        saveRemovedEvents(removedKey, mergedRemoved);
-        saveSnapshot(snapKey, curSnap);
+        // Sort chronologically (ascending by timestamp)
+        transformedEvents.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
-        // Combine
-        let all = [...synthesized, ...mergedRemoved];
-        // Filter out deleted IDs
-        const localDeleted = loadDeletedIds(deletedKey);
-        all = all.filter(ev => !localDeleted.has(ev.id));
-
-        all.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-        setEvents(all);
+        setEvents(transformedEvents);
       } catch (err: any) {
-        setError(err?.message || 'Failed to build event log');
+        setError(err?.message || 'Failed to load event log');
         setEvents([]);
       } finally {
         setLoading(false);
       }
     };
 
-    loadAll();
-  }, [user, removedKey, snapKey, deletedKey]);
+    loadEvents();
+  }, [user]);
 
   const filtered = useMemo(() => {
     return events
@@ -349,7 +259,7 @@ const EventLog: React.FC = () => {
     if (!search) return text;
     const lc = text.toLowerCase();
     const s = search.toLowerCase();
-    const parts: React.ReactNode[] = [];
+    const parts: (string | JSX.Element)[] = [];
     let idx = 0;
     while (true) {
       const found = lc.indexOf(s, idx);
@@ -392,11 +302,11 @@ const EventLog: React.FC = () => {
             <label>Type</label>
             <select value={typeFilter} onChange={e => setTypeFilter(e.target.value as any)}>
               <option value="All">All</option>
-              <option value="Income">Income</option>
-              <option value="Expense">Expense</option>
-              <option value="Asset">Asset</option>
-              <option value="Liability">Liability</option>
-              <option value="Removed">Removed</option>
+              <option value="INCOME">Income</option>
+              <option value="EXPENSE">Expense</option>
+              <option value="ASSET">Asset</option>
+              <option value="LIABILITY">Liability</option>
+              <option value="CASH_SAVINGS">Cash Savings</option>
             </select>
           </div>
           <div className="filter-group">
@@ -442,16 +352,14 @@ const EventLog: React.FC = () => {
                 <th>Type</th>
                 <th>Description</th>
                 <th className="col-change">Change</th>
-                <th> </th> {/* action column */}
               </tr>
             </thead>
             <tbody>
               {filtered.map(ev => {
                 const ts = new Date(ev.timestamp);
+                // Updated to always show + or - explicitly
                 const changeFmt =
-                  ev.id === 'start'
-                    ? Math.abs(ev.valueChange).toLocaleString()
-                    : (ev.valueChange >= 0 ? '+' : '-') + Math.abs(ev.valueChange).toLocaleString();
+                  (ev.valueChange >= 0 ? '+' : '-') + Math.abs(ev.valueChange).toLocaleString();
                 return (
                   <tr key={ev.id} className={`row-${ev.type.toLowerCase()}`}>
                     <td>
@@ -460,26 +368,17 @@ const EventLog: React.FC = () => {
                     </td>
                     <td className="type-cell">
                       {/* Hide type badge for Starting Balance row */}
-                      {ev.id === 'start' ? null : ev.type === 'Removed' ? (
-                        <span>removed</span>
+                      {ev.id !== 'start' ? (
+                        <span className={`badge badge-${ev.type.toLowerCase().replace('_', '-')}`}>
+                          {ev.type.replace('_', ' ')}
+                        </span>
                       ) : (
-                        <span className={`badge badge-${ev.type.toLowerCase()}`}>{ev.type}</span>
+                        null
                       )}
                     </td>
                     <td className="desc-cell">{highlight(ev.description)}</td>
-                    <td className={`change-cell ${ev.valueChange >= 0 ? 'pos' : 'neg'}`}>{changeFmt}</td>
-                    <td>
-                      {ev.id !== 'start' && (
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteEvent(ev.id)}
-                          className="clear-btn"
-                          style={{ padding: '0.3rem 0.6rem' }}
-                          title="Delete log"
-                        >
-                          ×
-                        </button>
-                      )}
+                    <td className={`change-cell ${ev.valueChange >= 0 ? 'pos' : 'neg'}`}>
+                      {changeFmt}
                     </td>
                   </tr>
                 );

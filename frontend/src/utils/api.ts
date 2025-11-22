@@ -495,6 +495,41 @@ export const adminAPI = {
   },
 };
 
+// Events API calls
+export const eventsAPI = {
+  // Get all events for the authenticated user
+  getEvents: async (params?: {
+    entityType?: string;
+    startDate?: string;
+    endDate?: string;
+    limit?: number;
+    offset?: number;
+  }) => {
+    const queryParams = new URLSearchParams();
+    if (params?.entityType) queryParams.append('entityType', params.entityType);
+    if (params?.startDate) queryParams.append('startDate', params.startDate);
+    if (params?.endDate) queryParams.append('endDate', params.endDate);
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.offset) queryParams.append('offset', params.offset.toString());
+    
+    const queryString = queryParams.toString();
+    const endpoint = queryString ? `/events?${queryString}` : '/events';
+    
+    return await apiRequest(endpoint, {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  },
+
+  // Get events for a specific entity
+  getEntityEvents: async (entityType: string, entityId: number) => {
+    return await apiRequest(`/events/${entityType}/${entityId}`, {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  },
+};
+
 // Currency API calls
 export const currencyAPI = {
   // Get all available currencies (public endpoint)

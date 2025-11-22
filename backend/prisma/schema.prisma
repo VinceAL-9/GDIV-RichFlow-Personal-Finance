@@ -19,7 +19,6 @@ model User {
   lastLogin           DateTime?
   BalanceSheet        BalanceSheet?
   CashSavings         CashSavings?
-  Event               Event[]
   IncomeStatement     IncomeStatement?
   Session             Session[]
   PreferredCurrency   Currency         @relation(fields: [preferredCurrencyId], references: [id])

@@ -262,6 +262,7 @@
 .badge-expense { background: linear-gradient(90deg,#dc3545,#ff6b6b); }
 .badge-asset { background: linear-gradient(90deg,#28a745,#5cb85c); }
 .badge-liability { background: linear-gradient(90deg,#ff7b7b,#ffb0b0); }
+.badge-cash-savings { background: linear-gradient(90deg,#ffc107,#ffdd57); }
 
 .change-cell {
   font-weight: 700;
