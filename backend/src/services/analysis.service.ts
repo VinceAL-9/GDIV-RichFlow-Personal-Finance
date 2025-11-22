@@ -16,16 +16,26 @@ interface FinancialState {
 
 /**
  * Reconstruct financial state by replaying events up to a target date
+ * 
+ * Expected Behavior:
+ * ✅ Query all events from account creation up to target date
+ * ✅ Filter events: timestamp <= targetDate
+ * ✅ Start with empty state (or initial state)
+ * ✅ Replay events in chronological order:
+ *    - CREATE events → Add entities
+ *    - UPDATE events → Modify entities
+ *    - DELETE events → Remove entities
+ * ✅ Return reconstructed state for that specific date
  */
 async function reconstructFinancialStateAtDate(userId: number, targetDate: Date): Promise<FinancialState> {
-  // Get all events up to the target date
+  // ✅ Query all events up to the target date (timestamp <= targetDate)
   const events = await getEventsByUser({
     userId,
     endDate: targetDate,
     limit: 100000 // Get all events
   });
 
-  // Initialize empty state
+  // ✅ Start with empty state (initial state)
   const state: FinancialState = {
     assets: new Map(),
     liabilities: new Map(),
@@ -34,7 +44,7 @@ async function reconstructFinancialStateAtDate(userId: number, targetDate: Date)
     cashSavings: 0
   };
 
-  // Sort events chronologically (oldest first)
+  // ✅ Sort events chronologically (oldest first) for replay
   events.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
   // Replay each event to reconstruct state
@@ -404,16 +414,12 @@ export const getFinancialSnapshot = async (userId: number, date?: string) => {
     return await getCurrentFinancialSnapshot(userId);
   }
 
-  // Parse target date
+  // Parse target date - set to end of day to include all events on that date
   const targetDate = new Date(date);
-  const now = new Date();
+  targetDate.setHours(23, 59, 59, 999);
 
-  // If target date is in the future or today, return current state
-  if (targetDate >= now) {
-    return await getCurrentFinancialSnapshot(userId);
-  }
-
-  // For historical dates, reconstruct state from events
+  // For any specified date, reconstruct state from events
+  // This ensures consistency and accuracy by replaying all events
   const state = await reconstructFinancialStateAtDate(userId, targetDate);
   return calculateSnapshotFromState(state, targetDate);
 };

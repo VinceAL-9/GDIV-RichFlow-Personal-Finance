@@ -25,6 +25,7 @@ interface FinancialEvent {
   type: EventType;
   description: string;
   valueChange: number;
+  actionType?: 'CREATE' | 'UPDATE' | 'DELETE';
 }
 
 // Helpers for snapshot + removed events persistence (per user)
@@ -99,9 +100,7 @@ const saveSnapshot = (key: string, snap: Snapshot) => {
   } catch {}
 };
 
-  actionType: string;
-}
-
+  
 const EventLog: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();

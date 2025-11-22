@@ -45,12 +45,12 @@ type SavedSnapshot = {
 
 // --- Historical currency mapping helpers (localStorage) ---
 type CurrencyRecord = { date: string; symbol: string; name: string };
-const currencyHistoryKey = (userId: number | undefined) => `analysis:currencyHistory:user:${userId ?? 'anon'}`;
+const currencyHistoryKey = (userId: string | number | undefined) => `analysis:currencyHistory:user:${userId ?? 'anon'}`;
 
 /**
  * Load currency history (sorted ascending by date)
  */
-const loadCurrencyHistory = (userId: number | undefined): CurrencyRecord[] => {
+const loadCurrencyHistory = (userId: string | number | undefined): CurrencyRecord[] => {
   if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(currencyHistoryKey(userId));
@@ -66,7 +66,7 @@ const loadCurrencyHistory = (userId: number | undefined): CurrencyRecord[] => {
 /**
  * Save currency history
  */
-const saveCurrencyHistory = (userId: number | undefined, records: CurrencyRecord[]) => {
+const saveCurrencyHistory = (userId: string | number | undefined, records: CurrencyRecord[]) => {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(currencyHistoryKey(userId), JSON.stringify(records));
@@ -76,7 +76,7 @@ const saveCurrencyHistory = (userId: number | undefined, records: CurrencyRecord
 /**
  * Ensure we record the current preferred currency if changed since last record.
  */
-const recordCurrentCurrencyIfNeeded = (userId: number | undefined, preferredCurrency: any) => {
+const recordCurrentCurrencyIfNeeded = (userId: string | number | undefined, preferredCurrency: any) => {
   if (!preferredCurrency) return;
   const records = loadCurrencyHistory(userId);
   const today = new Date().toISOString().substring(0, 10);
@@ -97,7 +97,7 @@ const recordCurrentCurrencyIfNeeded = (userId: number | undefined, preferredCurr
  * Falls back to last record or provided current currency.
  */
 const resolveHistoricalCurrency = (
-  userId: number | undefined,
+  userId: string | number | undefined,
   snapshotDate: string,
   currentPreferred: any
 ): { symbol: string; name: string } => {
@@ -167,6 +167,10 @@ const Analysis: React.FC = () => {
       setLoading(true);
       const data = await analysisAPI.getFinancialSnapshot(date);
       setSnapshotData(data);
+      // If no date provided, ensure selectedDate is cleared
+      if (!date) {
+        setSelectedDate('');
+      }
     } catch (error) {
       console.error('Failed to fetch snapshot:', error);
     } finally {
@@ -174,7 +178,7 @@ const Analysis: React.FC = () => {
     }
   };
 
-  // Initial data fetch
+  // Initial data fetch (current state)
   React.useEffect(() => {
     fetchSnapshot();
   }, []);
@@ -182,6 +186,7 @@ const Analysis: React.FC = () => {
   // Fetch when date changes
   React.useEffect(() => {
     if (selectedDate) {
+      console.log('Fetching snapshot for date:', selectedDate);
       fetchSnapshot(selectedDate);
     }
   }, [selectedDate]);
@@ -349,10 +354,35 @@ const Analysis: React.FC = () => {
                         type="date"
                         value={selectedDate}
                         onChange={(e) => setSelectedDate(e.target.value)}
+                        max={new Date().toISOString().split('T')[0]}
                       />
+                      {selectedDate && (
+                        <button
+                          className="btn-secondary"
+                          onClick={() => {
+                            setSelectedDate('');
+                            fetchSnapshot();
+                          }}
+                          style={{ marginLeft: '0.5rem' }}
+                        >
+                          Reset to Current
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
+                {selectedDate && (
+                  <div style={{ 
+                    padding: '0.5rem', 
+                    marginTop: '0.5rem', 
+                    backgroundColor: '#e3f2fd', 
+                    borderRadius: '4px', 
+                    fontSize: '0.85rem',
+                    color: '#1976d2'
+                  }}>
+                    📅 Viewing reconstructed state for: <strong>{selectedDate}</strong>
+                  </div>
+                )}
 
                 {snapshotData && (
                   <>

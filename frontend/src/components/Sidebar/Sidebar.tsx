@@ -164,11 +164,6 @@ const Sidebar: React.FC<Props> = ({ onOpenAssistant }) => {
           <div className="sidebar-button large"></div>
           <span className="sidebar-text"> {dynamicPageLabel} </span>
         </button>
-
-        <button className="selection large" onClick={() => navigate('/event-log')}>
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> View Event Log </span>
-        </button>
       </div>
 
       {/* Settings Section */}

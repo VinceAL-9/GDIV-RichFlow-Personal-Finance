@@ -14,7 +14,6 @@ import ChangePassword from './pages/ChangePassword/ChangePassword';
 import Admin from './pages/Admin/Admin';
 import EventLog from './pages/EventLog/EventLog';
 import Analysis from './pages/Analysis/Analysis';
-import EventLog from './pages/EventLog/EventLog';
 
 const container = document.getElementById('root');
 if (!container) {

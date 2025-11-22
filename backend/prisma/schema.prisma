@@ -21,6 +21,7 @@ model User {
   CashSavings         CashSavings?
   IncomeStatement     IncomeStatement?
   Session             Session[]
+  Event               Event[]
   PreferredCurrency   Currency         @relation(fields: [preferredCurrencyId], references: [id])
 }
 
@@ -73,7 +74,6 @@ model IncomeLine {
   type            String
   quadrant        String?
   isId            Int
-  quadrant        String?
   IncomeStatement IncomeStatement @relation(fields: [isId], references: [id], onDelete: Cascade)
 }
 
