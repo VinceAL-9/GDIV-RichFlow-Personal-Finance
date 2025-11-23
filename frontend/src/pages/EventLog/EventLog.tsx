@@ -3,21 +3,9 @@ import { JSX, useEffect, useMemo, useState } from 'react';
 import './EventLog.css';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { incomeAPI, assetsAPI, liabilitiesAPI, expensesAPI, eventsAPI } from '../../utils/api';
+import { eventsAPI } from '../../utils/api';
 
-type EventType = 'INCOME' | 'EXPENSE' | 'ASSET' | 'LIABILITY' | 'CASH_SAVINGS';
-
-interface BackendEvent {
-  id: number;
-  timestamp: string;
-  actionType: 'CREATE' | 'UPDATE' | 'DELETE';
-  entityType: EventType;
-  entitySubtype: string | null;
-  beforeValue: string | null;
-  afterValue: string | null;
-  userId: number;
-  entityId: number;
-}
+type EventType = 'Income' | 'Expense' | 'Asset' | 'Liability' | 'Removed' | 'Cash';
 
 interface FinancialEvent {
   id: string;
@@ -25,15 +13,7 @@ interface FinancialEvent {
   type: EventType;
   description: string;
   valueChange: number;
-  actionType?: 'CREATE' | 'UPDATE' | 'DELETE';
 }
-
-// Helpers for snapshot + removed events persistence (per user)
-type Snapshot = {
-  incomes: Record<string, { subtype: 'Earned' | 'Portfolio' | 'Passive'; amount: number }>;
-  expenses: Record<string, { amount: number }>;
-  liabilities: Record<string, { value: number }>;
-};
 
 const parseNum = (v: any) => (typeof v === 'number' ? v : parseFloat(v));
 
@@ -41,8 +21,7 @@ const usePerUserKeys = (user: any) => {
   const uid = (user && (user.id || user.userId || user.uid)) || 'anon';
   return {
     removedKey: `eventlog:removed:user:${uid}`,
-    snapKey: `eventlog:snapshot:user:${uid}`,
-    deletedKey: `eventlog:deleted:user:${uid}`, // added
+    deletedKey: `eventlog:deleted:user:${uid}`,
   };
 };
 
@@ -64,7 +43,6 @@ const saveRemovedEvents = (key: string, events: FinancialEvent[]) => {
   } catch {}
 };
 
-// Added deleted events helpers
 const loadDeletedIds = (key: string): Set<string> => {
   if (typeof window === 'undefined') return new Set();
   try {
@@ -83,24 +61,53 @@ const saveDeletedIds = (key: string, ids: Set<string>) => {
   } catch {}
 };
 
-const loadSnapshot = (key: string): Snapshot | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as Snapshot) : null;
-  } catch {
-    return null;
+// Map server entity types to display types
+const mapEntityType = (entityType: string, actionType?: string): EventType => {
+  switch ((entityType || '').toUpperCase()) {
+    case 'INCOME':
+      return actionType === 'DELETE' ? 'Removed' : 'Income';
+    case 'EXPENSE':
+      return actionType === 'DELETE' ? 'Removed' : 'Expense';
+    case 'ASSET':
+      return actionType === 'DELETE' ? 'Removed' : 'Asset';
+    case 'LIABILITY':
+      return actionType === 'DELETE' ? 'Removed' : 'Liability';
+    case 'CASH_SAVINGS':
+      return 'Cash';
+    default:
+      return 'Removed';
   }
 };
 
-const saveSnapshot = (key: string, snap: Snapshot) => {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(key, JSON.stringify(snap));
-  } catch {}
+// Compute signed value change based on entity and action
+const computeValueChange = (
+  entityType: string,
+  actionType: string,
+  beforeValue?: any,
+  afterValue?: any
+): number => {
+  const et = (entityType || '').toUpperCase();
+  const at = (actionType || '').toUpperCase();
+  const pick = (obj: any) =>
+    obj && (typeof obj.amount === 'number' || typeof obj.amount === 'string'
+      ? parseNum(obj.amount)
+      : typeof obj.value === 'number' || typeof obj.value === 'string'
+      ? parseNum(obj.value)
+      : 0);
+
+  if (at === 'DELETE') {
+    const v = pick(beforeValue);
+    if (et === 'EXPENSE' || et === 'LIABILITY') return Math.abs(v); // removal reduces outflow/liability
+    if (et === 'INCOME' || et === 'ASSET') return -Math.abs(v); // removal loses income/asset
+    return 0;
+  }
+  // CREATE/UPDATE reflects current afterValue impact
+  const v = pick(afterValue);
+  if (et === 'EXPENSE' || et === 'LIABILITY') return -Math.abs(v);
+  if (et === 'INCOME' || et === 'ASSET' || et === 'CASH_SAVINGS') return Math.abs(v);
+  return 0;
 };
 
-  
 const EventLog: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -113,126 +120,102 @@ const EventLog: React.FC = () => {
   const [endDate, setEndDate] = useState<string>('');
   const [search, setSearch] = useState<string>('');
 
+  const { removedKey, deletedKey } = usePerUserKeys(user);
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+
+  // Delete handler
+  const handleDeleteEvent = (id: string) => {
+    setEvents(prev => prev.filter(e => e.id !== id));
+    setDeletedIds(prev => {
+      const next = new Set(prev);
+      next.add(id);
+      saveDeletedIds(deletedKey, next);
+      // If it was a persisted removed event, purge from that storage too
+      const persistedRemoved = loadRemovedEvents(removedKey);
+      if (persistedRemoved.some(ev => ev.id === id)) {
+        const remaining = persistedRemoved.filter(ev => ev.id !== id);
+        saveRemovedEvents(removedKey, remaining);
+      }
+      return next;
+    });
+  };
+
   useEffect(() => {
-    const loadEvents = async () => {
+    // Initialize deleted IDs on mount
+    setDeletedIds(loadDeletedIds(deletedKey));
+  }, [deletedKey]);
+
+  useEffect(() => {
+    const loadFromApi = async () => {
       setLoading(true);
       setError(null);
       try {
-        // Fetch events from backend
-        const response = await eventsAPI.getEvents({ limit: 1000 });
-        const backendEvents: BackendEvent[] = response.events || [];
-
-        // Transform backend events to display format
-        const transformedEvents: FinancialEvent[] = [];
-
-        // Add starting balance event
-        const registrationTs = (user as any)?.createdAt || (user as any)?.created_at || (user as any)?.created || new Date().toISOString();
-        transformedEvents.push({
-          id: 'start',
-          timestamp: registrationTs,
-          type: 'ASSET',
-          description: 'Starting Balance',
-          valueChange: 0,
-          actionType: 'CREATE',
-        });
-
-        // Transform each backend event
-        for (const event of backendEvents) {
-          const afterData = event.afterValue ? JSON.parse(event.afterValue) : null;
-          const beforeData = event.beforeValue ? JSON.parse(event.beforeValue) : null;
-          
-          let description = '';
-          let valueChange = 0;
-          
-          // Build description based on action type and entity type
-          if (event.actionType === 'CREATE') {
-            const name = afterData?.name || 'Unknown';
-            const amount = afterData?.amount || afterData?.value || 0;
-            
-            if (event.entityType === 'INCOME') {
-              const subtype = event.entitySubtype || afterData?.type || 'Income';
-              description = `Added ${subtype} Income: ${name}`;
-              valueChange = Math.abs(amount);
-            } else if (event.entityType === 'EXPENSE') {
-              description = `Logged Expense: ${name}`;
-              valueChange = -Math.abs(amount);
-            } else if (event.entityType === 'ASSET') {
-              description = `Added Asset: ${name}`;
-              valueChange = Math.abs(amount);
-            } else if (event.entityType === 'LIABILITY') {
-              description = `Logged Liability: ${name}`;
-              valueChange = -Math.abs(amount);
-            } else if (event.entityType === 'CASH_SAVINGS') {
-              description = `Updated Cash Savings`;
-              valueChange = Math.abs(amount);
-            }
-          } else if (event.actionType === 'UPDATE') {
-            const name = afterData?.name || beforeData?.name || 'Unknown';
-            const afterAmount = afterData?.amount || afterData?.value || 0;
-            const beforeAmount = beforeData?.amount || beforeData?.value || 0;
-            const diff = afterAmount - beforeAmount;
-            
-            if (event.entityType === 'INCOME') {
-              const subtype = event.entitySubtype || afterData?.type || 'Income';
-              description = `Updated ${subtype} Income: ${name}`;
-              valueChange = diff;
-            } else if (event.entityType === 'EXPENSE') {
-              description = `Updated Expense: ${name}`;
-              valueChange = -Math.abs(diff);
-            } else if (event.entityType === 'ASSET') {
-              description = `Updated Asset: ${name}`;
-              valueChange = diff;
-            } else if (event.entityType === 'LIABILITY') {
-              description = `Updated Liability: ${name}`;
-              valueChange = -diff;
-            } else if (event.entityType === 'CASH_SAVINGS') {
-              description = `Updated Cash Savings`;
-              valueChange = diff;
-            }
-          } else if (event.actionType === 'DELETE') {
-            const name = beforeData?.name || 'Unknown';
-            const amount = beforeData?.amount || beforeData?.value || 0;
-            
-            if (event.entityType === 'INCOME') {
-              const subtype = event.entitySubtype || beforeData?.type || 'Income';
-              description = `Removed ${subtype} Income: ${name}`;
-              valueChange = -Math.abs(amount);
-            } else if (event.entityType === 'EXPENSE') {
-              description = `Removed Expense: ${name}`;
-              valueChange = Math.abs(amount); // Removing expense is positive
-            } else if (event.entityType === 'ASSET') {
-              description = `Removed Asset: ${name}`;
-              valueChange = -Math.abs(amount);
-            } else if (event.entityType === 'LIABILITY') {
-              description = `Removed Liability: ${name}`;
-              valueChange = Math.abs(amount); // Removing liability is positive
-            }
-          }
-
-          transformedEvents.push({
-            id: `event-${event.id}`,
-            timestamp: event.timestamp,
-            type: event.entityType,
-            description,
-            valueChange,
-            actionType: event.actionType,
-          });
+        const params: any = {};
+        if (startDate) params.startDate = startDate; // backend accepts ISO/DATE
+        if (endDate) params.endDate = endDate;       // inclusive handled backend-side
+        // apply entity type filter if not All
+        if (typeFilter !== 'All') {
+          const map: Record<string, string> = {
+            Income: 'INCOME',
+            Expense: 'EXPENSE',
+            Asset: 'ASSET',
+            Liability: 'LIABILITY',
+            Removed: '',
+            Cash: 'CASH_SAVINGS',
+          };
+          if (map[typeFilter]) params.entityType = map[typeFilter];
         }
 
-        // Sort chronologically (ascending by timestamp)
-        transformedEvents.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+        const data = await eventsAPI.getEvents(params);
+        const apiEvents: any[] = Array.isArray(data?.events) ? data.events : [];
 
-        setEvents(transformedEvents);
+        const transformed: FinancialEvent[] = apiEvents.map((ev: any) => {
+          const afterValue = ev.afterValue ? JSON.parse(ev.afterValue) : undefined;
+          const beforeValue = ev.beforeValue ? JSON.parse(ev.beforeValue) : undefined;
+          const type = mapEntityType(ev.entityType, ev.actionType);
+          const valueChange = computeValueChange(ev.entityType, ev.actionType, beforeValue, afterValue);
+
+          let desc = '';
+          const name = (afterValue?.name || beforeValue?.name || '').toString();
+          const prefix = ev.actionType === 'DELETE' ? 'Removed' : ev.actionType === 'UPDATE' ? 'Updated' : 'Created';
+          switch ((ev.entityType || '').toUpperCase()) {
+            case 'INCOME': desc = `${prefix}: Income${name ? ' - ' + name : ''}`; break;
+            case 'EXPENSE': desc = `${prefix}: Expense${name ? ' - ' + name : ''}`; break;
+            case 'ASSET': desc = `${prefix}: Asset${name ? ' - ' + name : ''}`; break;
+            case 'LIABILITY': desc = `${prefix}: Liability${name ? ' - ' + name : ''}`; break;
+            case 'CASH_SAVINGS': desc = `${prefix}: Cash Savings`; break;
+            case 'USER': desc = `Account Created`; break;
+            default: desc = `${prefix}: ${ev.entityType}`;
+          }
+
+          return {
+            id: String(ev.id),
+            timestamp: ev.timestamp,
+            type,
+            description: desc,
+            valueChange,
+          } as FinancialEvent;
+        });
+
+        // Keep any locally persisted "Removed" events if present
+        const existingRemoved = loadRemovedEvents(removedKey);
+
+        // Filter out locally deleted ids
+        const localDeleted = loadDeletedIds(deletedKey);
+        const merged = [...transformed, ...existingRemoved].filter(ev => !localDeleted.has(ev.id));
+
+        merged.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+        setEvents(merged);
       } catch (err: any) {
-        setError(err?.message || 'Failed to load event log');
+        setError(err?.message || 'Failed to fetch events');
         setEvents([]);
       } finally {
         setLoading(false);
       }
     };
 
-    loadEvents();
-  }, [user]);
+    loadFromApi();
+  }, [typeFilter, startDate, endDate, deletedKey, removedKey]);
 
   const filtered = useMemo(() => {
     return events
@@ -301,11 +284,12 @@ const EventLog: React.FC = () => {
             <label>Type</label>
             <select value={typeFilter} onChange={e => setTypeFilter(e.target.value as any)}>
               <option value="All">All</option>
-              <option value="INCOME">Income</option>
-              <option value="EXPENSE">Expense</option>
-              <option value="ASSET">Asset</option>
-              <option value="LIABILITY">Liability</option>
-              <option value="CASH_SAVINGS">Cash Savings</option>
+              <option value="Income">Income</option>
+              <option value="Expense">Expense</option>
+              <option value="Asset">Asset</option>
+              <option value="Liability">Liability</option>
+              <option value="Removed">Removed</option>
+              <option value="Cash">Cash</option>
             </select>
           </div>
           <div className="filter-group">
@@ -377,7 +361,27 @@ const EventLog: React.FC = () => {
                     </td>
                     <td className="desc-cell">{highlight(ev.description)}</td>
                     <td className={`change-cell ${ev.valueChange >= 0 ? 'pos' : 'neg'}`}>
-                      {changeFmt}
+                      {(() => {
+                        const sym = user?.preferredCurrency?.cur_symbol || '$';
+                        // keep explicit sign (+/-) and prepend currency symbol
+                        const abs = Math.abs(ev.valueChange).toLocaleString();
+                        return (ev.id === 'start')
+                          ? `${sym}${abs}`
+                          : `${ev.valueChange >= 0 ? '+' : '-'}${sym}${abs}`;
+                      })()}
+                    </td>
+                    <td>
+                      {ev.id !== 'start' && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteEvent(ev.id)}
+                          className="clear-btn"
+                          style={{ padding: '0.3rem 0.6rem' }}
+                          title="Delete log"
+                        >
+                          ×
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );

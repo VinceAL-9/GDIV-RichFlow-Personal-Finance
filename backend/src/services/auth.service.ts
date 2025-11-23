@@ -116,6 +116,19 @@ export async function createUser(userData: CreateUserData): Promise<UserResponse
       }
     });
 
+    // Log user account creation event
+    await tx.event.create({
+      data: {
+        actionType: ActionType.CREATE,
+        entityType: EntityType.USER,
+        entitySubtype: null,
+        beforeValue: null,
+        afterValue: JSON.stringify({ id: newUser.id, email: newUser.email, name: newUser.name }),
+        userId: newUser.id,
+        entityId: newUser.id
+      }
+    });
+
     return newUser;
   });
 

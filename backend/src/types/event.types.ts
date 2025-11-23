@@ -15,7 +15,8 @@ export enum EntityType {
   EXPENSE = 'EXPENSE',
   ASSET = 'ASSET',
   LIABILITY = 'LIABILITY',
-  CASH_SAVINGS = 'CASH_SAVINGS'
+  CASH_SAVINGS = 'CASH_SAVINGS',
+  USER = 'USER'
 }
 
 export enum IncomeSubtype {

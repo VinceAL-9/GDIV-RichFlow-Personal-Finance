@@ -28,12 +28,22 @@ interface FinancialState {
  * ✅ Return reconstructed state for that specific date
  */
 async function reconstructFinancialStateAtDate(userId: number, targetDate: Date): Promise<FinancialState> {
-  // ✅ Query all events up to the target date (timestamp <= targetDate)
-  const events = await getEventsByUser({
+  // Determine account creation date to bound the search window
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { createdAt: true }
+  });
+
+  // Get all events from account creation up to the target date (inclusive)
+  const queryParams: any = {
     userId,
     endDate: targetDate,
-    limit: 100000 // Get all events
-  });
+    limit: 100000
+  };
+  if (user?.createdAt) {
+    queryParams.startDate = user.createdAt;
+  }
+  const events = await getEventsByUser(queryParams);
 
   // ✅ Start with empty state (initial state)
   const state: FinancialState = {
@@ -414,12 +424,22 @@ export const getFinancialSnapshot = async (userId: number, date?: string) => {
     return await getCurrentFinancialSnapshot(userId);
   }
 
-  // Parse target date - set to end of day to include all events on that date
-  const targetDate = new Date(date);
-  targetDate.setHours(23, 59, 59, 999);
+  // Parse target date as end-of-day UTC for the provided YYYY-MM-DD
+  const targetDate = (() => {
+    // If date includes time, use native Date parsing
+    if (date.length > 10) return new Date(date);
+    const [y, m, d] = date.split('-').map(Number);
+    if (!y || !m || !d) return new Date(date);
+    return new Date(Date.UTC(y, m - 1, d, 23, 59, 59, 999));
+  })();
+  const now = new Date();
 
-  // For any specified date, reconstruct state from events
-  // This ensures consistency and accuracy by replaying all events
+  // If target date is in the future or today, return current state
+  if (targetDate >= now) {
+    return await getCurrentFinancialSnapshot(userId);
+  }
+
+  // For historical dates, reconstruct state from events
   const state = await reconstructFinancialStateAtDate(userId, targetDate);
   return calculateSnapshotFromState(state, targetDate);
 };
