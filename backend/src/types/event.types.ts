@@ -16,7 +16,9 @@ export interface DecimalLike {
 export enum ActionType {
   CREATE = 'CREATE',
   UPDATE = 'UPDATE',
-  DELETE = 'DELETE'
+  DELETE = 'DELETE',
+  LINK = 'LINK',
+  UNLINK = 'UNLINK'
 }
 
 export enum EntityType {

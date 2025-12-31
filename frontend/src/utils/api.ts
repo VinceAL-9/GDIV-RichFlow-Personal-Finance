@@ -624,3 +624,93 @@ export const currencyAPI = {
     });
   },
 };
+
+// ============================================================================
+// True Yield Engine API
+// ============================================================================
+
+export const trueYieldAPI = {
+  /**
+   * Get asset performance metrics (tier-gated)
+   * FREE tier: Returns structure only (linked items)
+   * PRO tier: Returns full metrics and insights
+   */
+  getAssetYield: async (assetId: number) => {
+    return await apiRequest(`/analysis/asset/${assetId}/yield`, {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  },
+
+  /**
+   * Get all assets with yield summary
+   */
+  getAssetsYieldSummary: async () => {
+    return await apiRequest('/analysis/assets/yield-summary', {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  },
+
+  /**
+   * Get income lines available for linking (not yet linked to any asset)
+   */
+  getAvailableIncomeLines: async () => {
+    return await apiRequest('/analysis/available-income-lines', {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  },
+
+  /**
+   * Get liabilities available for linking (not yet linked to any asset)
+   */
+  getAvailableLiabilities: async () => {
+    return await apiRequest('/analysis/available-liabilities', {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  },
+
+  /**
+   * Link an income line to an asset
+   */
+  linkIncomeToAsset: async (assetId: number, incomeLineId: number) => {
+    return await apiRequest(`/analysis/asset/${assetId}/link-income`, {
+      method: 'POST',
+      body: JSON.stringify({ incomeLineId }),
+      requiresAuth: true,
+    });
+  },
+
+  /**
+   * Unlink an income line from its asset
+   */
+  unlinkIncomeFromAsset: async (incomeLineId: number) => {
+    return await apiRequest(`/analysis/income/${incomeLineId}/unlink`, {
+      method: 'DELETE',
+      requiresAuth: true,
+    });
+  },
+
+  /**
+   * Link a liability to an asset
+   */
+  linkLiabilityToAsset: async (assetId: number, liabilityId: number) => {
+    return await apiRequest(`/analysis/asset/${assetId}/link-liability`, {
+      method: 'POST',
+      body: JSON.stringify({ liabilityId }),
+      requiresAuth: true,
+    });
+  },
+
+  /**
+   * Unlink a liability from its asset
+   */
+  unlinkLiabilityFromAsset: async (liabilityId: number) => {
+    return await apiRequest(`/analysis/liability/${liabilityId}/unlink`, {
+      method: 'DELETE',
+      requiresAuth: true,
+    });
+  },
+};

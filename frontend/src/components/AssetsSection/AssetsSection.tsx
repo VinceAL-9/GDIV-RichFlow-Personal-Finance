@@ -6,9 +6,11 @@ import {
   useDeleteAssetMutation,
   AssetItem,
 } from "../../hooks/queries/useBalanceSheet";
+import { useAssetYieldQuery } from "../../hooks/queries/useTrueYield";
 import { useCurrency } from "../../context/CurrencyContext";
 import { formatCurrency } from "../../utils/currency.utils";
 import FinancialTable, { ColumnDefinition } from "../Shared/FinancialTable";
+import { AssetLinkingModal, TrueYieldCard } from "../TrueYield";
 
 const AssetsSection: React.FC = () => {
   const { currency } = useCurrency();
@@ -23,6 +25,17 @@ const AssetsSection: React.FC = () => {
   const [assetName, setAssetName] = useState("");
   const [assetAmount, setAssetAmount] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
+
+  // True Yield Engine state
+  const [selectedAssetId, setSelectedAssetId] = useState<number | null>(null);
+  const [isLinkingModalOpen, setIsLinkingModalOpen] = useState(false);
+  const [showYieldCard, setShowYieldCard] = useState<number | null>(null);
+
+  // Query for selected asset's yield data
+  const { data: selectedAssetYield } = useAssetYieldQuery(
+    showYieldCard ?? 0,
+    showYieldCard !== null
+  );
 
   // Handle add asset
   const handleAddAsset = async () => {
@@ -96,6 +109,17 @@ const AssetsSection: React.FC = () => {
     }
   };
 
+  // Handle opening the linking modal
+  const handleOpenLinking = (assetId: number) => {
+    setSelectedAssetId(assetId);
+    setIsLinkingModalOpen(true);
+  };
+
+  // Handle viewing yield card
+  const handleViewYield = (assetId: number) => {
+    setShowYieldCard(showYieldCard === assetId ? null : assetId);
+  };
+
   // Column definitions for FinancialTable
   const columns: ColumnDefinition<AssetItem>[] = [
     { header: "Name", accessor: "name" },
@@ -105,6 +129,36 @@ const AssetsSection: React.FC = () => {
       align: "right",
     },
   ];
+
+  // Custom row actions for True Yield
+  const renderRowActions = (item: AssetItem) => (
+    <div className="flex items-center gap-1">
+      {/* Link button */}
+      <button
+        onClick={() => handleOpenLinking(item.id)}
+        className="p-1.5 text-purple-400 hover:bg-purple-500/20 rounded transition-colors"
+        title="Link income/liabilities"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+        </svg>
+      </button>
+      {/* View yield button */}
+      <button
+        onClick={() => handleViewYield(item.id)}
+        className={`p-1.5 rounded transition-colors ${
+          showYieldCard === item.id 
+            ? 'text-emerald-400 bg-emerald-500/20' 
+            : 'text-emerald-400 hover:bg-emerald-500/20'
+        }`}
+        title="View yield analysis"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      </button>
+    </div>
+  );
 
   // Determine which item is being deleted (for loading state)
   const deletingId = deleteAssetMutation.isPending ? deleteAssetMutation.variables?.id : null;
@@ -143,7 +197,21 @@ const AssetsSection: React.FC = () => {
         editingId={editingItem?.id ?? null}
         deletingId={deletingId ?? null}
         noCard={true}
+        renderRowActions={renderRowActions}
       />
+
+      {/* True Yield Card for selected asset */}
+      {showYieldCard !== null && selectedAssetYield && (
+        <div className="mt-4">
+          <TrueYieldCard 
+            data={selectedAssetYield}
+            onUpgrade={() => {
+              // Handle upgrade navigation
+              console.log('Navigate to upgrade page');
+            }}
+          />
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="flex flex-wrap gap-3">
         <input
@@ -194,6 +262,19 @@ const AssetsSection: React.FC = () => {
           </button>
         )}
       </form>
+
+      {/* Asset Linking Modal */}
+      {selectedAssetId !== null && (
+        <AssetLinkingModal
+          assetId={selectedAssetId}
+          assetName={assetData.find(a => a.id === selectedAssetId)?.name ?? 'Asset'}
+          isOpen={isLinkingModalOpen}
+          onClose={() => {
+            setIsLinkingModalOpen(false);
+            setSelectedAssetId(null);
+          }}
+        />
+      )}
     </div>
   );
 };

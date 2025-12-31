@@ -1348,6 +1348,7 @@ export const UserScalarFieldEnum = {
   email: 'email',
   password: 'password',
   isAdmin: 'isAdmin',
+  subscriptionTier: 'subscriptionTier',
   preferredCurrencyId: 'preferredCurrencyId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -1393,7 +1394,8 @@ export const LiabilityScalarFieldEnum = {
   id: 'id',
   name: 'name',
   value: 'value',
-  bsId: 'bsId'
+  bsId: 'bsId',
+  assetId: 'assetId'
 } as const
 
 export type LiabilityScalarFieldEnum = (typeof LiabilityScalarFieldEnum)[keyof typeof LiabilityScalarFieldEnum]
@@ -1413,7 +1415,8 @@ export const IncomeLineScalarFieldEnum = {
   amount: 'amount',
   type: 'type',
   isId: 'isId',
-  quadrant: 'quadrant'
+  quadrant: 'quadrant',
+  assetId: 'assetId'
 } as const
 
 export type IncomeLineScalarFieldEnum = (typeof IncomeLineScalarFieldEnum)[keyof typeof IncomeLineScalarFieldEnum]
@@ -1557,6 +1560,20 @@ export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMod
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'SubscriptionTier'
+ */
+export type EnumSubscriptionTierFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SubscriptionTier'>
+    
+
+
+/**
+ * Reference to a field of type 'SubscriptionTier[]'
+ */
+export type ListEnumSubscriptionTierFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SubscriptionTier[]'>
     
 
 

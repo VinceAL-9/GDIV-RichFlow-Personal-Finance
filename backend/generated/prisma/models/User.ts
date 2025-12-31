@@ -42,6 +42,7 @@ export type UserMinAggregateOutputType = {
   email: string | null
   password: string | null
   isAdmin: boolean | null
+  subscriptionTier: $Enums.SubscriptionTier | null
   preferredCurrencyId: number | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -54,6 +55,7 @@ export type UserMaxAggregateOutputType = {
   email: string | null
   password: string | null
   isAdmin: boolean | null
+  subscriptionTier: $Enums.SubscriptionTier | null
   preferredCurrencyId: number | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -66,6 +68,7 @@ export type UserCountAggregateOutputType = {
   email: number
   password: number
   isAdmin: number
+  subscriptionTier: number
   preferredCurrencyId: number
   createdAt: number
   updatedAt: number
@@ -90,6 +93,7 @@ export type UserMinAggregateInputType = {
   email?: true
   password?: true
   isAdmin?: true
+  subscriptionTier?: true
   preferredCurrencyId?: true
   createdAt?: true
   updatedAt?: true
@@ -102,6 +106,7 @@ export type UserMaxAggregateInputType = {
   email?: true
   password?: true
   isAdmin?: true
+  subscriptionTier?: true
   preferredCurrencyId?: true
   createdAt?: true
   updatedAt?: true
@@ -114,6 +119,7 @@ export type UserCountAggregateInputType = {
   email?: true
   password?: true
   isAdmin?: true
+  subscriptionTier?: true
   preferredCurrencyId?: true
   createdAt?: true
   updatedAt?: true
@@ -213,6 +219,7 @@ export type UserGroupByOutputType = {
   email: string
   password: string
   isAdmin: boolean
+  subscriptionTier: $Enums.SubscriptionTier
   preferredCurrencyId: number
   createdAt: Date
   updatedAt: Date
@@ -248,6 +255,7 @@ export type UserWhereInput = {
   email?: Prisma.StringFilter<"User"> | string
   password?: Prisma.StringFilter<"User"> | string
   isAdmin?: Prisma.BoolFilter<"User"> | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFilter<"User"> | $Enums.SubscriptionTier
   preferredCurrencyId?: Prisma.IntFilter<"User"> | number
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -267,6 +275,7 @@ export type UserOrderByWithRelationInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   isAdmin?: Prisma.SortOrder
+  subscriptionTier?: Prisma.SortOrder
   preferredCurrencyId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -289,6 +298,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   password?: Prisma.StringFilter<"User"> | string
   isAdmin?: Prisma.BoolFilter<"User"> | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFilter<"User"> | $Enums.SubscriptionTier
   preferredCurrencyId?: Prisma.IntFilter<"User"> | number
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -308,6 +318,7 @@ export type UserOrderByWithAggregationInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   isAdmin?: Prisma.SortOrder
+  subscriptionTier?: Prisma.SortOrder
   preferredCurrencyId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -328,6 +339,7 @@ export type UserScalarWhereWithAggregatesInput = {
   email?: Prisma.StringWithAggregatesFilter<"User"> | string
   password?: Prisma.StringWithAggregatesFilter<"User"> | string
   isAdmin?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierWithAggregatesFilter<"User"> | $Enums.SubscriptionTier
   preferredCurrencyId?: Prisma.IntWithAggregatesFilter<"User"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -339,6 +351,7 @@ export type UserCreateInput = {
   email: string
   password: string
   isAdmin?: boolean
+  subscriptionTier?: $Enums.SubscriptionTier
   createdAt?: Date | string
   updatedAt: Date | string
   lastLogin?: Date | string | null
@@ -357,6 +370,7 @@ export type UserUncheckedCreateInput = {
   email: string
   password: string
   isAdmin?: boolean
+  subscriptionTier?: $Enums.SubscriptionTier
   preferredCurrencyId?: number
   createdAt?: Date | string
   updatedAt: Date | string
@@ -374,6 +388,7 @@ export type UserUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFieldUpdateOperationsInput | $Enums.SubscriptionTier
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -392,6 +407,7 @@ export type UserUncheckedUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFieldUpdateOperationsInput | $Enums.SubscriptionTier
   preferredCurrencyId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -410,6 +426,7 @@ export type UserCreateManyInput = {
   email: string
   password: string
   isAdmin?: boolean
+  subscriptionTier?: $Enums.SubscriptionTier
   preferredCurrencyId?: number
   createdAt?: Date | string
   updatedAt: Date | string
@@ -421,6 +438,7 @@ export type UserUpdateManyMutationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFieldUpdateOperationsInput | $Enums.SubscriptionTier
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -432,6 +450,7 @@ export type UserUncheckedUpdateManyInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFieldUpdateOperationsInput | $Enums.SubscriptionTier
   preferredCurrencyId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -444,6 +463,7 @@ export type UserCountOrderByAggregateInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   isAdmin?: Prisma.SortOrder
+  subscriptionTier?: Prisma.SortOrder
   preferredCurrencyId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -461,6 +481,7 @@ export type UserMaxOrderByAggregateInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   isAdmin?: Prisma.SortOrder
+  subscriptionTier?: Prisma.SortOrder
   preferredCurrencyId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -473,6 +494,7 @@ export type UserMinOrderByAggregateInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   isAdmin?: Prisma.SortOrder
+  subscriptionTier?: Prisma.SortOrder
   preferredCurrencyId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -505,6 +527,10 @@ export type StringFieldUpdateOperationsInput = {
 
 export type BoolFieldUpdateOperationsInput = {
   set?: boolean
+}
+
+export type EnumSubscriptionTierFieldUpdateOperationsInput = {
+  set?: $Enums.SubscriptionTier
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -654,6 +680,7 @@ export type UserCreateWithoutSessionInput = {
   email: string
   password: string
   isAdmin?: boolean
+  subscriptionTier?: $Enums.SubscriptionTier
   createdAt?: Date | string
   updatedAt: Date | string
   lastLogin?: Date | string | null
@@ -671,6 +698,7 @@ export type UserUncheckedCreateWithoutSessionInput = {
   email: string
   password: string
   isAdmin?: boolean
+  subscriptionTier?: $Enums.SubscriptionTier
   preferredCurrencyId?: number
   createdAt?: Date | string
   updatedAt: Date | string
@@ -703,6 +731,7 @@ export type UserUpdateWithoutSessionInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFieldUpdateOperationsInput | $Enums.SubscriptionTier
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -720,6 +749,7 @@ export type UserUncheckedUpdateWithoutSessionInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFieldUpdateOperationsInput | $Enums.SubscriptionTier
   preferredCurrencyId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -736,6 +766,7 @@ export type UserCreateWithoutBalanceSheetInput = {
   email: string
   password: string
   isAdmin?: boolean
+  subscriptionTier?: $Enums.SubscriptionTier
   createdAt?: Date | string
   updatedAt: Date | string
   lastLogin?: Date | string | null
@@ -753,6 +784,7 @@ export type UserUncheckedCreateWithoutBalanceSheetInput = {
   email: string
   password: string
   isAdmin?: boolean
+  subscriptionTier?: $Enums.SubscriptionTier
   preferredCurrencyId?: number
   createdAt?: Date | string
   updatedAt: Date | string
@@ -785,6 +817,7 @@ export type UserUpdateWithoutBalanceSheetInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFieldUpdateOperationsInput | $Enums.SubscriptionTier
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -802,6 +835,7 @@ export type UserUncheckedUpdateWithoutBalanceSheetInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFieldUpdateOperationsInput | $Enums.SubscriptionTier
   preferredCurrencyId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -818,6 +852,7 @@ export type UserCreateWithoutIncomeStatementInput = {
   email: string
   password: string
   isAdmin?: boolean
+  subscriptionTier?: $Enums.SubscriptionTier
   createdAt?: Date | string
   updatedAt: Date | string
   lastLogin?: Date | string | null
@@ -835,6 +870,7 @@ export type UserUncheckedCreateWithoutIncomeStatementInput = {
   email: string
   password: string
   isAdmin?: boolean
+  subscriptionTier?: $Enums.SubscriptionTier
   preferredCurrencyId?: number
   createdAt?: Date | string
   updatedAt: Date | string
@@ -867,6 +903,7 @@ export type UserUpdateWithoutIncomeStatementInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFieldUpdateOperationsInput | $Enums.SubscriptionTier
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -884,6 +921,7 @@ export type UserUncheckedUpdateWithoutIncomeStatementInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFieldUpdateOperationsInput | $Enums.SubscriptionTier
   preferredCurrencyId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -900,6 +938,7 @@ export type UserCreateWithoutCashSavingsInput = {
   email: string
   password: string
   isAdmin?: boolean
+  subscriptionTier?: $Enums.SubscriptionTier
   createdAt?: Date | string
   updatedAt: Date | string
   lastLogin?: Date | string | null
@@ -917,6 +956,7 @@ export type UserUncheckedCreateWithoutCashSavingsInput = {
   email: string
   password: string
   isAdmin?: boolean
+  subscriptionTier?: $Enums.SubscriptionTier
   preferredCurrencyId?: number
   createdAt?: Date | string
   updatedAt: Date | string
@@ -949,6 +989,7 @@ export type UserUpdateWithoutCashSavingsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFieldUpdateOperationsInput | $Enums.SubscriptionTier
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -966,6 +1007,7 @@ export type UserUncheckedUpdateWithoutCashSavingsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFieldUpdateOperationsInput | $Enums.SubscriptionTier
   preferredCurrencyId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -982,6 +1024,7 @@ export type UserCreateWithoutPreferredCurrencyInput = {
   email: string
   password: string
   isAdmin?: boolean
+  subscriptionTier?: $Enums.SubscriptionTier
   createdAt?: Date | string
   updatedAt: Date | string
   lastLogin?: Date | string | null
@@ -999,6 +1042,7 @@ export type UserUncheckedCreateWithoutPreferredCurrencyInput = {
   email: string
   password: string
   isAdmin?: boolean
+  subscriptionTier?: $Enums.SubscriptionTier
   createdAt?: Date | string
   updatedAt: Date | string
   lastLogin?: Date | string | null
@@ -1045,6 +1089,7 @@ export type UserScalarWhereInput = {
   email?: Prisma.StringFilter<"User"> | string
   password?: Prisma.StringFilter<"User"> | string
   isAdmin?: Prisma.BoolFilter<"User"> | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFilter<"User"> | $Enums.SubscriptionTier
   preferredCurrencyId?: Prisma.IntFilter<"User"> | number
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -1056,6 +1101,7 @@ export type UserCreateWithoutEventInput = {
   email: string
   password: string
   isAdmin?: boolean
+  subscriptionTier?: $Enums.SubscriptionTier
   createdAt?: Date | string
   updatedAt: Date | string
   lastLogin?: Date | string | null
@@ -1073,6 +1119,7 @@ export type UserUncheckedCreateWithoutEventInput = {
   email: string
   password: string
   isAdmin?: boolean
+  subscriptionTier?: $Enums.SubscriptionTier
   preferredCurrencyId?: number
   createdAt?: Date | string
   updatedAt: Date | string
@@ -1105,6 +1152,7 @@ export type UserUpdateWithoutEventInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFieldUpdateOperationsInput | $Enums.SubscriptionTier
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1122,6 +1170,7 @@ export type UserUncheckedUpdateWithoutEventInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFieldUpdateOperationsInput | $Enums.SubscriptionTier
   preferredCurrencyId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1138,6 +1187,7 @@ export type UserCreateWithoutFinancialSnapshotsInput = {
   email: string
   password: string
   isAdmin?: boolean
+  subscriptionTier?: $Enums.SubscriptionTier
   createdAt?: Date | string
   updatedAt: Date | string
   lastLogin?: Date | string | null
@@ -1155,6 +1205,7 @@ export type UserUncheckedCreateWithoutFinancialSnapshotsInput = {
   email: string
   password: string
   isAdmin?: boolean
+  subscriptionTier?: $Enums.SubscriptionTier
   preferredCurrencyId?: number
   createdAt?: Date | string
   updatedAt: Date | string
@@ -1187,6 +1238,7 @@ export type UserUpdateWithoutFinancialSnapshotsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFieldUpdateOperationsInput | $Enums.SubscriptionTier
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1204,6 +1256,7 @@ export type UserUncheckedUpdateWithoutFinancialSnapshotsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFieldUpdateOperationsInput | $Enums.SubscriptionTier
   preferredCurrencyId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1221,6 +1274,7 @@ export type UserCreateManyPreferredCurrencyInput = {
   email: string
   password: string
   isAdmin?: boolean
+  subscriptionTier?: $Enums.SubscriptionTier
   createdAt?: Date | string
   updatedAt: Date | string
   lastLogin?: Date | string | null
@@ -1231,6 +1285,7 @@ export type UserUpdateWithoutPreferredCurrencyInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFieldUpdateOperationsInput | $Enums.SubscriptionTier
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1248,6 +1303,7 @@ export type UserUncheckedUpdateWithoutPreferredCurrencyInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFieldUpdateOperationsInput | $Enums.SubscriptionTier
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1265,6 +1321,7 @@ export type UserUncheckedUpdateManyWithoutPreferredCurrencyInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionTier?: Prisma.EnumSubscriptionTierFieldUpdateOperationsInput | $Enums.SubscriptionTier
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1325,6 +1382,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   email?: boolean
   password?: boolean
   isAdmin?: boolean
+  subscriptionTier?: boolean
   preferredCurrencyId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1345,6 +1403,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   email?: boolean
   password?: boolean
   isAdmin?: boolean
+  subscriptionTier?: boolean
   preferredCurrencyId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1358,6 +1417,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   email?: boolean
   password?: boolean
   isAdmin?: boolean
+  subscriptionTier?: boolean
   preferredCurrencyId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1371,13 +1431,14 @@ export type UserSelectScalar = {
   email?: boolean
   password?: boolean
   isAdmin?: boolean
+  subscriptionTier?: boolean
   preferredCurrencyId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   lastLogin?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "isAdmin" | "preferredCurrencyId" | "createdAt" | "updatedAt" | "lastLogin", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "isAdmin" | "subscriptionTier" | "preferredCurrencyId" | "createdAt" | "updatedAt" | "lastLogin", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   BalanceSheet?: boolean | Prisma.User$BalanceSheetArgs<ExtArgs>
   CashSavings?: boolean | Prisma.User$CashSavingsArgs<ExtArgs>
@@ -1412,6 +1473,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     email: string
     password: string
     isAdmin: boolean
+    subscriptionTier: $Enums.SubscriptionTier
     preferredCurrencyId: number
     createdAt: Date
     updatedAt: Date
@@ -1851,6 +1913,7 @@ export interface UserFieldRefs {
   readonly email: Prisma.FieldRef<"User", 'String'>
   readonly password: Prisma.FieldRef<"User", 'String'>
   readonly isAdmin: Prisma.FieldRef<"User", 'Boolean'>
+  readonly subscriptionTier: Prisma.FieldRef<"User", 'SubscriptionTier'>
   readonly preferredCurrencyId: Prisma.FieldRef<"User", 'Int'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>

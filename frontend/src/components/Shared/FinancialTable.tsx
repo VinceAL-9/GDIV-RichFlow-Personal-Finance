@@ -54,6 +54,8 @@ export interface FinancialTableProps<T extends { id: number | string }> {
   className?: string;
   /** If true, does not render the rf-card wrapper (for embedding inside another card) */
   noCard?: boolean;
+  /** Optional custom row actions renderer */
+  renderRowActions?: (item: T) => React.ReactNode;
 }
 
 /**
@@ -77,8 +79,10 @@ function FinancialTable<T extends { id: number | string }>({
   compactHeader = false,
   className = '',
   noCard = false,
+  renderRowActions,
 }: FinancialTableProps<T>): React.ReactElement {
   const hasActions = Boolean(onEdit || onDelete);
+  const hasCustomActions = Boolean(renderRowActions);
   const isAnyOperationInProgress = editingId !== null || deletingId !== null;
 
   /**
@@ -142,8 +146,10 @@ function FinancialTable<T extends { id: number | string }>({
               ))}
 
               {/* Action Buttons (only if handlers provided) */}
-              {hasActions && (
-                <div className="rf-list-item-actions">
+              {(hasActions || hasCustomActions) && (
+                <div className="rf-list-item-actions flex items-center gap-1">
+                  {/* Custom row actions */}
+                  {renderRowActions && renderRowActions(item)}
                   {onEdit && (
                     <button
                       className="rf-btn-edit"
@@ -176,7 +182,7 @@ function FinancialTable<T extends { id: number | string }>({
           <span className="rf-list-item-name font-bold">{footer.label}</span>
           <span className="rf-list-item-amount font-bold">{footer.value}</span>
           {/* Spacer to align with action buttons if present */}
-          {hasActions && <div className="rf-list-item-actions" style={{ visibility: 'hidden' }}>
+          {(hasActions || hasCustomActions) && <div className="rf-list-item-actions" style={{ visibility: 'hidden' }}>
             <button className="rf-btn-edit" style={{ visibility: 'hidden' }}>Edit</button>
             <button className="rf-btn-delete" style={{ visibility: 'hidden' }}>✕</button>
           </div>}

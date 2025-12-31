@@ -30,12 +30,14 @@ export type IncomeLineAvgAggregateOutputType = {
   id: number | null
   amount: runtime.Decimal | null
   isId: number | null
+  assetId: number | null
 }
 
 export type IncomeLineSumAggregateOutputType = {
   id: number | null
   amount: runtime.Decimal | null
   isId: number | null
+  assetId: number | null
 }
 
 export type IncomeLineMinAggregateOutputType = {
@@ -45,6 +47,7 @@ export type IncomeLineMinAggregateOutputType = {
   type: string | null
   isId: number | null
   quadrant: string | null
+  assetId: number | null
 }
 
 export type IncomeLineMaxAggregateOutputType = {
@@ -54,6 +57,7 @@ export type IncomeLineMaxAggregateOutputType = {
   type: string | null
   isId: number | null
   quadrant: string | null
+  assetId: number | null
 }
 
 export type IncomeLineCountAggregateOutputType = {
@@ -63,6 +67,7 @@ export type IncomeLineCountAggregateOutputType = {
   type: number
   isId: number
   quadrant: number
+  assetId: number
   _all: number
 }
 
@@ -71,12 +76,14 @@ export type IncomeLineAvgAggregateInputType = {
   id?: true
   amount?: true
   isId?: true
+  assetId?: true
 }
 
 export type IncomeLineSumAggregateInputType = {
   id?: true
   amount?: true
   isId?: true
+  assetId?: true
 }
 
 export type IncomeLineMinAggregateInputType = {
@@ -86,6 +93,7 @@ export type IncomeLineMinAggregateInputType = {
   type?: true
   isId?: true
   quadrant?: true
+  assetId?: true
 }
 
 export type IncomeLineMaxAggregateInputType = {
@@ -95,6 +103,7 @@ export type IncomeLineMaxAggregateInputType = {
   type?: true
   isId?: true
   quadrant?: true
+  assetId?: true
 }
 
 export type IncomeLineCountAggregateInputType = {
@@ -104,6 +113,7 @@ export type IncomeLineCountAggregateInputType = {
   type?: true
   isId?: true
   quadrant?: true
+  assetId?: true
   _all?: true
 }
 
@@ -200,6 +210,7 @@ export type IncomeLineGroupByOutputType = {
   type: string
   isId: number
   quadrant: string | null
+  assetId: number | null
   _count: IncomeLineCountAggregateOutputType | null
   _avg: IncomeLineAvgAggregateOutputType | null
   _sum: IncomeLineSumAggregateOutputType | null
@@ -232,7 +243,9 @@ export type IncomeLineWhereInput = {
   type?: Prisma.StringFilter<"IncomeLine"> | string
   isId?: Prisma.IntFilter<"IncomeLine"> | number
   quadrant?: Prisma.StringNullableFilter<"IncomeLine"> | string | null
+  assetId?: Prisma.IntNullableFilter<"IncomeLine"> | number | null
   IncomeStatement?: Prisma.XOR<Prisma.IncomeStatementScalarRelationFilter, Prisma.IncomeStatementWhereInput>
+  LinkedAsset?: Prisma.XOR<Prisma.AssetNullableScalarRelationFilter, Prisma.AssetWhereInput> | null
 }
 
 export type IncomeLineOrderByWithRelationInput = {
@@ -242,7 +255,9 @@ export type IncomeLineOrderByWithRelationInput = {
   type?: Prisma.SortOrder
   isId?: Prisma.SortOrder
   quadrant?: Prisma.SortOrderInput | Prisma.SortOrder
+  assetId?: Prisma.SortOrderInput | Prisma.SortOrder
   IncomeStatement?: Prisma.IncomeStatementOrderByWithRelationInput
+  LinkedAsset?: Prisma.AssetOrderByWithRelationInput
 }
 
 export type IncomeLineWhereUniqueInput = Prisma.AtLeast<{
@@ -255,7 +270,9 @@ export type IncomeLineWhereUniqueInput = Prisma.AtLeast<{
   type?: Prisma.StringFilter<"IncomeLine"> | string
   isId?: Prisma.IntFilter<"IncomeLine"> | number
   quadrant?: Prisma.StringNullableFilter<"IncomeLine"> | string | null
+  assetId?: Prisma.IntNullableFilter<"IncomeLine"> | number | null
   IncomeStatement?: Prisma.XOR<Prisma.IncomeStatementScalarRelationFilter, Prisma.IncomeStatementWhereInput>
+  LinkedAsset?: Prisma.XOR<Prisma.AssetNullableScalarRelationFilter, Prisma.AssetWhereInput> | null
 }, "id">
 
 export type IncomeLineOrderByWithAggregationInput = {
@@ -265,6 +282,7 @@ export type IncomeLineOrderByWithAggregationInput = {
   type?: Prisma.SortOrder
   isId?: Prisma.SortOrder
   quadrant?: Prisma.SortOrderInput | Prisma.SortOrder
+  assetId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.IncomeLineCountOrderByAggregateInput
   _avg?: Prisma.IncomeLineAvgOrderByAggregateInput
   _max?: Prisma.IncomeLineMaxOrderByAggregateInput
@@ -282,6 +300,7 @@ export type IncomeLineScalarWhereWithAggregatesInput = {
   type?: Prisma.StringWithAggregatesFilter<"IncomeLine"> | string
   isId?: Prisma.IntWithAggregatesFilter<"IncomeLine"> | number
   quadrant?: Prisma.StringNullableWithAggregatesFilter<"IncomeLine"> | string | null
+  assetId?: Prisma.IntNullableWithAggregatesFilter<"IncomeLine"> | number | null
 }
 
 export type IncomeLineCreateInput = {
@@ -290,6 +309,7 @@ export type IncomeLineCreateInput = {
   type: string
   quadrant?: string | null
   IncomeStatement: Prisma.IncomeStatementCreateNestedOneWithoutIncomeLineInput
+  LinkedAsset?: Prisma.AssetCreateNestedOneWithoutLinkedIncomeLinesInput
 }
 
 export type IncomeLineUncheckedCreateInput = {
@@ -299,6 +319,7 @@ export type IncomeLineUncheckedCreateInput = {
   type: string
   isId: number
   quadrant?: string | null
+  assetId?: number | null
 }
 
 export type IncomeLineUpdateInput = {
@@ -307,6 +328,7 @@ export type IncomeLineUpdateInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   quadrant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   IncomeStatement?: Prisma.IncomeStatementUpdateOneRequiredWithoutIncomeLineNestedInput
+  LinkedAsset?: Prisma.AssetUpdateOneWithoutLinkedIncomeLinesNestedInput
 }
 
 export type IncomeLineUncheckedUpdateInput = {
@@ -316,6 +338,7 @@ export type IncomeLineUncheckedUpdateInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   isId?: Prisma.IntFieldUpdateOperationsInput | number
   quadrant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assetId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type IncomeLineCreateManyInput = {
@@ -325,6 +348,7 @@ export type IncomeLineCreateManyInput = {
   type: string
   isId: number
   quadrant?: string | null
+  assetId?: number | null
 }
 
 export type IncomeLineUpdateManyMutationInput = {
@@ -341,45 +365,7 @@ export type IncomeLineUncheckedUpdateManyInput = {
   type?: Prisma.StringFieldUpdateOperationsInput | string
   isId?: Prisma.IntFieldUpdateOperationsInput | number
   quadrant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-}
-
-export type IncomeLineCountOrderByAggregateInput = {
-  id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
-  amount?: Prisma.SortOrder
-  type?: Prisma.SortOrder
-  isId?: Prisma.SortOrder
-  quadrant?: Prisma.SortOrder
-}
-
-export type IncomeLineAvgOrderByAggregateInput = {
-  id?: Prisma.SortOrder
-  amount?: Prisma.SortOrder
-  isId?: Prisma.SortOrder
-}
-
-export type IncomeLineMaxOrderByAggregateInput = {
-  id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
-  amount?: Prisma.SortOrder
-  type?: Prisma.SortOrder
-  isId?: Prisma.SortOrder
-  quadrant?: Prisma.SortOrder
-}
-
-export type IncomeLineMinOrderByAggregateInput = {
-  id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
-  amount?: Prisma.SortOrder
-  type?: Prisma.SortOrder
-  isId?: Prisma.SortOrder
-  quadrant?: Prisma.SortOrder
-}
-
-export type IncomeLineSumOrderByAggregateInput = {
-  id?: Prisma.SortOrder
-  amount?: Prisma.SortOrder
-  isId?: Prisma.SortOrder
+  assetId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type IncomeLineListRelationFilter = {
@@ -390,6 +376,92 @@ export type IncomeLineListRelationFilter = {
 
 export type IncomeLineOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type IncomeLineCountOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  amount?: Prisma.SortOrder
+  type?: Prisma.SortOrder
+  isId?: Prisma.SortOrder
+  quadrant?: Prisma.SortOrder
+  assetId?: Prisma.SortOrder
+}
+
+export type IncomeLineAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+  amount?: Prisma.SortOrder
+  isId?: Prisma.SortOrder
+  assetId?: Prisma.SortOrder
+}
+
+export type IncomeLineMaxOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  amount?: Prisma.SortOrder
+  type?: Prisma.SortOrder
+  isId?: Prisma.SortOrder
+  quadrant?: Prisma.SortOrder
+  assetId?: Prisma.SortOrder
+}
+
+export type IncomeLineMinOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  amount?: Prisma.SortOrder
+  type?: Prisma.SortOrder
+  isId?: Prisma.SortOrder
+  quadrant?: Prisma.SortOrder
+  assetId?: Prisma.SortOrder
+}
+
+export type IncomeLineSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+  amount?: Prisma.SortOrder
+  isId?: Prisma.SortOrder
+  assetId?: Prisma.SortOrder
+}
+
+export type IncomeLineCreateNestedManyWithoutLinkedAssetInput = {
+  create?: Prisma.XOR<Prisma.IncomeLineCreateWithoutLinkedAssetInput, Prisma.IncomeLineUncheckedCreateWithoutLinkedAssetInput> | Prisma.IncomeLineCreateWithoutLinkedAssetInput[] | Prisma.IncomeLineUncheckedCreateWithoutLinkedAssetInput[]
+  connectOrCreate?: Prisma.IncomeLineCreateOrConnectWithoutLinkedAssetInput | Prisma.IncomeLineCreateOrConnectWithoutLinkedAssetInput[]
+  createMany?: Prisma.IncomeLineCreateManyLinkedAssetInputEnvelope
+  connect?: Prisma.IncomeLineWhereUniqueInput | Prisma.IncomeLineWhereUniqueInput[]
+}
+
+export type IncomeLineUncheckedCreateNestedManyWithoutLinkedAssetInput = {
+  create?: Prisma.XOR<Prisma.IncomeLineCreateWithoutLinkedAssetInput, Prisma.IncomeLineUncheckedCreateWithoutLinkedAssetInput> | Prisma.IncomeLineCreateWithoutLinkedAssetInput[] | Prisma.IncomeLineUncheckedCreateWithoutLinkedAssetInput[]
+  connectOrCreate?: Prisma.IncomeLineCreateOrConnectWithoutLinkedAssetInput | Prisma.IncomeLineCreateOrConnectWithoutLinkedAssetInput[]
+  createMany?: Prisma.IncomeLineCreateManyLinkedAssetInputEnvelope
+  connect?: Prisma.IncomeLineWhereUniqueInput | Prisma.IncomeLineWhereUniqueInput[]
+}
+
+export type IncomeLineUpdateManyWithoutLinkedAssetNestedInput = {
+  create?: Prisma.XOR<Prisma.IncomeLineCreateWithoutLinkedAssetInput, Prisma.IncomeLineUncheckedCreateWithoutLinkedAssetInput> | Prisma.IncomeLineCreateWithoutLinkedAssetInput[] | Prisma.IncomeLineUncheckedCreateWithoutLinkedAssetInput[]
+  connectOrCreate?: Prisma.IncomeLineCreateOrConnectWithoutLinkedAssetInput | Prisma.IncomeLineCreateOrConnectWithoutLinkedAssetInput[]
+  upsert?: Prisma.IncomeLineUpsertWithWhereUniqueWithoutLinkedAssetInput | Prisma.IncomeLineUpsertWithWhereUniqueWithoutLinkedAssetInput[]
+  createMany?: Prisma.IncomeLineCreateManyLinkedAssetInputEnvelope
+  set?: Prisma.IncomeLineWhereUniqueInput | Prisma.IncomeLineWhereUniqueInput[]
+  disconnect?: Prisma.IncomeLineWhereUniqueInput | Prisma.IncomeLineWhereUniqueInput[]
+  delete?: Prisma.IncomeLineWhereUniqueInput | Prisma.IncomeLineWhereUniqueInput[]
+  connect?: Prisma.IncomeLineWhereUniqueInput | Prisma.IncomeLineWhereUniqueInput[]
+  update?: Prisma.IncomeLineUpdateWithWhereUniqueWithoutLinkedAssetInput | Prisma.IncomeLineUpdateWithWhereUniqueWithoutLinkedAssetInput[]
+  updateMany?: Prisma.IncomeLineUpdateManyWithWhereWithoutLinkedAssetInput | Prisma.IncomeLineUpdateManyWithWhereWithoutLinkedAssetInput[]
+  deleteMany?: Prisma.IncomeLineScalarWhereInput | Prisma.IncomeLineScalarWhereInput[]
+}
+
+export type IncomeLineUncheckedUpdateManyWithoutLinkedAssetNestedInput = {
+  create?: Prisma.XOR<Prisma.IncomeLineCreateWithoutLinkedAssetInput, Prisma.IncomeLineUncheckedCreateWithoutLinkedAssetInput> | Prisma.IncomeLineCreateWithoutLinkedAssetInput[] | Prisma.IncomeLineUncheckedCreateWithoutLinkedAssetInput[]
+  connectOrCreate?: Prisma.IncomeLineCreateOrConnectWithoutLinkedAssetInput | Prisma.IncomeLineCreateOrConnectWithoutLinkedAssetInput[]
+  upsert?: Prisma.IncomeLineUpsertWithWhereUniqueWithoutLinkedAssetInput | Prisma.IncomeLineUpsertWithWhereUniqueWithoutLinkedAssetInput[]
+  createMany?: Prisma.IncomeLineCreateManyLinkedAssetInputEnvelope
+  set?: Prisma.IncomeLineWhereUniqueInput | Prisma.IncomeLineWhereUniqueInput[]
+  disconnect?: Prisma.IncomeLineWhereUniqueInput | Prisma.IncomeLineWhereUniqueInput[]
+  delete?: Prisma.IncomeLineWhereUniqueInput | Prisma.IncomeLineWhereUniqueInput[]
+  connect?: Prisma.IncomeLineWhereUniqueInput | Prisma.IncomeLineWhereUniqueInput[]
+  update?: Prisma.IncomeLineUpdateWithWhereUniqueWithoutLinkedAssetInput | Prisma.IncomeLineUpdateWithWhereUniqueWithoutLinkedAssetInput[]
+  updateMany?: Prisma.IncomeLineUpdateManyWithWhereWithoutLinkedAssetInput | Prisma.IncomeLineUpdateManyWithWhereWithoutLinkedAssetInput[]
+  deleteMany?: Prisma.IncomeLineScalarWhereInput | Prisma.IncomeLineScalarWhereInput[]
 }
 
 export type NullableStringFieldUpdateOperationsInput = {
@@ -438,11 +510,68 @@ export type IncomeLineUncheckedUpdateManyWithoutIncomeStatementNestedInput = {
   deleteMany?: Prisma.IncomeLineScalarWhereInput | Prisma.IncomeLineScalarWhereInput[]
 }
 
+export type IncomeLineCreateWithoutLinkedAssetInput = {
+  name: string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  type: string
+  quadrant?: string | null
+  IncomeStatement: Prisma.IncomeStatementCreateNestedOneWithoutIncomeLineInput
+}
+
+export type IncomeLineUncheckedCreateWithoutLinkedAssetInput = {
+  id?: number
+  name: string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  type: string
+  isId: number
+  quadrant?: string | null
+}
+
+export type IncomeLineCreateOrConnectWithoutLinkedAssetInput = {
+  where: Prisma.IncomeLineWhereUniqueInput
+  create: Prisma.XOR<Prisma.IncomeLineCreateWithoutLinkedAssetInput, Prisma.IncomeLineUncheckedCreateWithoutLinkedAssetInput>
+}
+
+export type IncomeLineCreateManyLinkedAssetInputEnvelope = {
+  data: Prisma.IncomeLineCreateManyLinkedAssetInput | Prisma.IncomeLineCreateManyLinkedAssetInput[]
+  skipDuplicates?: boolean
+}
+
+export type IncomeLineUpsertWithWhereUniqueWithoutLinkedAssetInput = {
+  where: Prisma.IncomeLineWhereUniqueInput
+  update: Prisma.XOR<Prisma.IncomeLineUpdateWithoutLinkedAssetInput, Prisma.IncomeLineUncheckedUpdateWithoutLinkedAssetInput>
+  create: Prisma.XOR<Prisma.IncomeLineCreateWithoutLinkedAssetInput, Prisma.IncomeLineUncheckedCreateWithoutLinkedAssetInput>
+}
+
+export type IncomeLineUpdateWithWhereUniqueWithoutLinkedAssetInput = {
+  where: Prisma.IncomeLineWhereUniqueInput
+  data: Prisma.XOR<Prisma.IncomeLineUpdateWithoutLinkedAssetInput, Prisma.IncomeLineUncheckedUpdateWithoutLinkedAssetInput>
+}
+
+export type IncomeLineUpdateManyWithWhereWithoutLinkedAssetInput = {
+  where: Prisma.IncomeLineScalarWhereInput
+  data: Prisma.XOR<Prisma.IncomeLineUpdateManyMutationInput, Prisma.IncomeLineUncheckedUpdateManyWithoutLinkedAssetInput>
+}
+
+export type IncomeLineScalarWhereInput = {
+  AND?: Prisma.IncomeLineScalarWhereInput | Prisma.IncomeLineScalarWhereInput[]
+  OR?: Prisma.IncomeLineScalarWhereInput[]
+  NOT?: Prisma.IncomeLineScalarWhereInput | Prisma.IncomeLineScalarWhereInput[]
+  id?: Prisma.IntFilter<"IncomeLine"> | number
+  name?: Prisma.StringFilter<"IncomeLine"> | string
+  amount?: Prisma.DecimalFilter<"IncomeLine"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  type?: Prisma.StringFilter<"IncomeLine"> | string
+  isId?: Prisma.IntFilter<"IncomeLine"> | number
+  quadrant?: Prisma.StringNullableFilter<"IncomeLine"> | string | null
+  assetId?: Prisma.IntNullableFilter<"IncomeLine"> | number | null
+}
+
 export type IncomeLineCreateWithoutIncomeStatementInput = {
   name: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   type: string
   quadrant?: string | null
+  LinkedAsset?: Prisma.AssetCreateNestedOneWithoutLinkedIncomeLinesInput
 }
 
 export type IncomeLineUncheckedCreateWithoutIncomeStatementInput = {
@@ -451,6 +580,7 @@ export type IncomeLineUncheckedCreateWithoutIncomeStatementInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   type: string
   quadrant?: string | null
+  assetId?: number | null
 }
 
 export type IncomeLineCreateOrConnectWithoutIncomeStatementInput = {
@@ -479,16 +609,39 @@ export type IncomeLineUpdateManyWithWhereWithoutIncomeStatementInput = {
   data: Prisma.XOR<Prisma.IncomeLineUpdateManyMutationInput, Prisma.IncomeLineUncheckedUpdateManyWithoutIncomeStatementInput>
 }
 
-export type IncomeLineScalarWhereInput = {
-  AND?: Prisma.IncomeLineScalarWhereInput | Prisma.IncomeLineScalarWhereInput[]
-  OR?: Prisma.IncomeLineScalarWhereInput[]
-  NOT?: Prisma.IncomeLineScalarWhereInput | Prisma.IncomeLineScalarWhereInput[]
-  id?: Prisma.IntFilter<"IncomeLine"> | number
-  name?: Prisma.StringFilter<"IncomeLine"> | string
-  amount?: Prisma.DecimalFilter<"IncomeLine"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  type?: Prisma.StringFilter<"IncomeLine"> | string
-  isId?: Prisma.IntFilter<"IncomeLine"> | number
-  quadrant?: Prisma.StringNullableFilter<"IncomeLine"> | string | null
+export type IncomeLineCreateManyLinkedAssetInput = {
+  id?: number
+  name: string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  type: string
+  isId: number
+  quadrant?: string | null
+}
+
+export type IncomeLineUpdateWithoutLinkedAssetInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  quadrant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  IncomeStatement?: Prisma.IncomeStatementUpdateOneRequiredWithoutIncomeLineNestedInput
+}
+
+export type IncomeLineUncheckedUpdateWithoutLinkedAssetInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  isId?: Prisma.IntFieldUpdateOperationsInput | number
+  quadrant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type IncomeLineUncheckedUpdateManyWithoutLinkedAssetInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  isId?: Prisma.IntFieldUpdateOperationsInput | number
+  quadrant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type IncomeLineCreateManyIncomeStatementInput = {
@@ -497,6 +650,7 @@ export type IncomeLineCreateManyIncomeStatementInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   type: string
   quadrant?: string | null
+  assetId?: number | null
 }
 
 export type IncomeLineUpdateWithoutIncomeStatementInput = {
@@ -504,6 +658,7 @@ export type IncomeLineUpdateWithoutIncomeStatementInput = {
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   quadrant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  LinkedAsset?: Prisma.AssetUpdateOneWithoutLinkedIncomeLinesNestedInput
 }
 
 export type IncomeLineUncheckedUpdateWithoutIncomeStatementInput = {
@@ -512,6 +667,7 @@ export type IncomeLineUncheckedUpdateWithoutIncomeStatementInput = {
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   quadrant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assetId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type IncomeLineUncheckedUpdateManyWithoutIncomeStatementInput = {
@@ -520,6 +676,7 @@ export type IncomeLineUncheckedUpdateManyWithoutIncomeStatementInput = {
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   quadrant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assetId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 
@@ -531,7 +688,9 @@ export type IncomeLineSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   type?: boolean
   isId?: boolean
   quadrant?: boolean
+  assetId?: boolean
   IncomeStatement?: boolean | Prisma.IncomeStatementDefaultArgs<ExtArgs>
+  LinkedAsset?: boolean | Prisma.IncomeLine$LinkedAssetArgs<ExtArgs>
 }, ExtArgs["result"]["incomeLine"]>
 
 export type IncomeLineSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -541,7 +700,9 @@ export type IncomeLineSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   type?: boolean
   isId?: boolean
   quadrant?: boolean
+  assetId?: boolean
   IncomeStatement?: boolean | Prisma.IncomeStatementDefaultArgs<ExtArgs>
+  LinkedAsset?: boolean | Prisma.IncomeLine$LinkedAssetArgs<ExtArgs>
 }, ExtArgs["result"]["incomeLine"]>
 
 export type IncomeLineSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -551,7 +712,9 @@ export type IncomeLineSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   type?: boolean
   isId?: boolean
   quadrant?: boolean
+  assetId?: boolean
   IncomeStatement?: boolean | Prisma.IncomeStatementDefaultArgs<ExtArgs>
+  LinkedAsset?: boolean | Prisma.IncomeLine$LinkedAssetArgs<ExtArgs>
 }, ExtArgs["result"]["incomeLine"]>
 
 export type IncomeLineSelectScalar = {
@@ -561,23 +724,28 @@ export type IncomeLineSelectScalar = {
   type?: boolean
   isId?: boolean
   quadrant?: boolean
+  assetId?: boolean
 }
 
-export type IncomeLineOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "amount" | "type" | "isId" | "quadrant", ExtArgs["result"]["incomeLine"]>
+export type IncomeLineOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "amount" | "type" | "isId" | "quadrant" | "assetId", ExtArgs["result"]["incomeLine"]>
 export type IncomeLineInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   IncomeStatement?: boolean | Prisma.IncomeStatementDefaultArgs<ExtArgs>
+  LinkedAsset?: boolean | Prisma.IncomeLine$LinkedAssetArgs<ExtArgs>
 }
 export type IncomeLineIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   IncomeStatement?: boolean | Prisma.IncomeStatementDefaultArgs<ExtArgs>
+  LinkedAsset?: boolean | Prisma.IncomeLine$LinkedAssetArgs<ExtArgs>
 }
 export type IncomeLineIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   IncomeStatement?: boolean | Prisma.IncomeStatementDefaultArgs<ExtArgs>
+  LinkedAsset?: boolean | Prisma.IncomeLine$LinkedAssetArgs<ExtArgs>
 }
 
 export type $IncomeLinePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "IncomeLine"
   objects: {
     IncomeStatement: Prisma.$IncomeStatementPayload<ExtArgs>
+    LinkedAsset: Prisma.$AssetPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -586,6 +754,7 @@ export type $IncomeLinePayload<ExtArgs extends runtime.Types.Extensions.Internal
     type: string
     isId: number
     quadrant: string | null
+    assetId: number | null
   }, ExtArgs["result"]["incomeLine"]>
   composites: {}
 }
@@ -981,6 +1150,7 @@ readonly fields: IncomeLineFieldRefs;
 export interface Prisma__IncomeLineClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   IncomeStatement<T extends Prisma.IncomeStatementDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.IncomeStatementDefaultArgs<ExtArgs>>): Prisma.Prisma__IncomeStatementClient<runtime.Types.Result.GetResult<Prisma.$IncomeStatementPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  LinkedAsset<T extends Prisma.IncomeLine$LinkedAssetArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.IncomeLine$LinkedAssetArgs<ExtArgs>>): Prisma.Prisma__AssetClient<runtime.Types.Result.GetResult<Prisma.$AssetPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1016,6 +1186,7 @@ export interface IncomeLineFieldRefs {
   readonly type: Prisma.FieldRef<"IncomeLine", 'String'>
   readonly isId: Prisma.FieldRef<"IncomeLine", 'Int'>
   readonly quadrant: Prisma.FieldRef<"IncomeLine", 'String'>
+  readonly assetId: Prisma.FieldRef<"IncomeLine", 'Int'>
 }
     
 
@@ -1409,6 +1580,25 @@ export type IncomeLineDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Limit how many IncomeLines to delete.
    */
   limit?: number
+}
+
+/**
+ * IncomeLine.LinkedAsset
+ */
+export type IncomeLine$LinkedAssetArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Asset
+   */
+  select?: Prisma.AssetSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Asset
+   */
+  omit?: Prisma.AssetOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AssetInclude<ExtArgs> | null
+  where?: Prisma.AssetWhereInput
 }
 
 /**

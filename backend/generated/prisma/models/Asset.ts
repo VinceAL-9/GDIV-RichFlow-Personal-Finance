@@ -217,6 +217,8 @@ export type AssetWhereInput = {
   value?: Prisma.DecimalFilter<"Asset"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   bsId?: Prisma.IntFilter<"Asset"> | number
   BalanceSheet?: Prisma.XOR<Prisma.BalanceSheetScalarRelationFilter, Prisma.BalanceSheetWhereInput>
+  linkedIncomeLines?: Prisma.IncomeLineListRelationFilter
+  linkedLiabilities?: Prisma.LiabilityListRelationFilter
 }
 
 export type AssetOrderByWithRelationInput = {
@@ -225,6 +227,8 @@ export type AssetOrderByWithRelationInput = {
   value?: Prisma.SortOrder
   bsId?: Prisma.SortOrder
   BalanceSheet?: Prisma.BalanceSheetOrderByWithRelationInput
+  linkedIncomeLines?: Prisma.IncomeLineOrderByRelationAggregateInput
+  linkedLiabilities?: Prisma.LiabilityOrderByRelationAggregateInput
 }
 
 export type AssetWhereUniqueInput = Prisma.AtLeast<{
@@ -236,6 +240,8 @@ export type AssetWhereUniqueInput = Prisma.AtLeast<{
   value?: Prisma.DecimalFilter<"Asset"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   bsId?: Prisma.IntFilter<"Asset"> | number
   BalanceSheet?: Prisma.XOR<Prisma.BalanceSheetScalarRelationFilter, Prisma.BalanceSheetWhereInput>
+  linkedIncomeLines?: Prisma.IncomeLineListRelationFilter
+  linkedLiabilities?: Prisma.LiabilityListRelationFilter
 }, "id">
 
 export type AssetOrderByWithAggregationInput = {
@@ -264,6 +270,8 @@ export type AssetCreateInput = {
   name: string
   value: runtime.Decimal | runtime.DecimalJsLike | number | string
   BalanceSheet: Prisma.BalanceSheetCreateNestedOneWithoutAssetInput
+  linkedIncomeLines?: Prisma.IncomeLineCreateNestedManyWithoutLinkedAssetInput
+  linkedLiabilities?: Prisma.LiabilityCreateNestedManyWithoutLinkedAssetInput
 }
 
 export type AssetUncheckedCreateInput = {
@@ -271,12 +279,16 @@ export type AssetUncheckedCreateInput = {
   name: string
   value: runtime.Decimal | runtime.DecimalJsLike | number | string
   bsId: number
+  linkedIncomeLines?: Prisma.IncomeLineUncheckedCreateNestedManyWithoutLinkedAssetInput
+  linkedLiabilities?: Prisma.LiabilityUncheckedCreateNestedManyWithoutLinkedAssetInput
 }
 
 export type AssetUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   BalanceSheet?: Prisma.BalanceSheetUpdateOneRequiredWithoutAssetNestedInput
+  linkedIncomeLines?: Prisma.IncomeLineUpdateManyWithoutLinkedAssetNestedInput
+  linkedLiabilities?: Prisma.LiabilityUpdateManyWithoutLinkedAssetNestedInput
 }
 
 export type AssetUncheckedUpdateInput = {
@@ -284,6 +296,8 @@ export type AssetUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   bsId?: Prisma.IntFieldUpdateOperationsInput | number
+  linkedIncomeLines?: Prisma.IncomeLineUncheckedUpdateManyWithoutLinkedAssetNestedInput
+  linkedLiabilities?: Prisma.LiabilityUncheckedUpdateManyWithoutLinkedAssetNestedInput
 }
 
 export type AssetCreateManyInput = {
@@ -338,6 +352,11 @@ export type AssetSumOrderByAggregateInput = {
   bsId?: Prisma.SortOrder
 }
 
+export type AssetNullableScalarRelationFilter = {
+  is?: Prisma.AssetWhereInput | null
+  isNot?: Prisma.AssetWhereInput | null
+}
+
 export type AssetListRelationFilter = {
   every?: Prisma.AssetWhereInput
   some?: Prisma.AssetWhereInput
@@ -346,6 +365,22 @@ export type AssetListRelationFilter = {
 
 export type AssetOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type AssetCreateNestedOneWithoutLinkedLiabilitiesInput = {
+  create?: Prisma.XOR<Prisma.AssetCreateWithoutLinkedLiabilitiesInput, Prisma.AssetUncheckedCreateWithoutLinkedLiabilitiesInput>
+  connectOrCreate?: Prisma.AssetCreateOrConnectWithoutLinkedLiabilitiesInput
+  connect?: Prisma.AssetWhereUniqueInput
+}
+
+export type AssetUpdateOneWithoutLinkedLiabilitiesNestedInput = {
+  create?: Prisma.XOR<Prisma.AssetCreateWithoutLinkedLiabilitiesInput, Prisma.AssetUncheckedCreateWithoutLinkedLiabilitiesInput>
+  connectOrCreate?: Prisma.AssetCreateOrConnectWithoutLinkedLiabilitiesInput
+  upsert?: Prisma.AssetUpsertWithoutLinkedLiabilitiesInput
+  disconnect?: Prisma.AssetWhereInput | boolean
+  delete?: Prisma.AssetWhereInput | boolean
+  connect?: Prisma.AssetWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.AssetUpdateToOneWithWhereWithoutLinkedLiabilitiesInput, Prisma.AssetUpdateWithoutLinkedLiabilitiesInput>, Prisma.AssetUncheckedUpdateWithoutLinkedLiabilitiesInput>
 }
 
 export type AssetCreateNestedManyWithoutBalanceSheetInput = {
@@ -390,15 +425,81 @@ export type AssetUncheckedUpdateManyWithoutBalanceSheetNestedInput = {
   deleteMany?: Prisma.AssetScalarWhereInput | Prisma.AssetScalarWhereInput[]
 }
 
+export type AssetCreateNestedOneWithoutLinkedIncomeLinesInput = {
+  create?: Prisma.XOR<Prisma.AssetCreateWithoutLinkedIncomeLinesInput, Prisma.AssetUncheckedCreateWithoutLinkedIncomeLinesInput>
+  connectOrCreate?: Prisma.AssetCreateOrConnectWithoutLinkedIncomeLinesInput
+  connect?: Prisma.AssetWhereUniqueInput
+}
+
+export type AssetUpdateOneWithoutLinkedIncomeLinesNestedInput = {
+  create?: Prisma.XOR<Prisma.AssetCreateWithoutLinkedIncomeLinesInput, Prisma.AssetUncheckedCreateWithoutLinkedIncomeLinesInput>
+  connectOrCreate?: Prisma.AssetCreateOrConnectWithoutLinkedIncomeLinesInput
+  upsert?: Prisma.AssetUpsertWithoutLinkedIncomeLinesInput
+  disconnect?: Prisma.AssetWhereInput | boolean
+  delete?: Prisma.AssetWhereInput | boolean
+  connect?: Prisma.AssetWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.AssetUpdateToOneWithWhereWithoutLinkedIncomeLinesInput, Prisma.AssetUpdateWithoutLinkedIncomeLinesInput>, Prisma.AssetUncheckedUpdateWithoutLinkedIncomeLinesInput>
+}
+
+export type AssetCreateWithoutLinkedLiabilitiesInput = {
+  name: string
+  value: runtime.Decimal | runtime.DecimalJsLike | number | string
+  BalanceSheet: Prisma.BalanceSheetCreateNestedOneWithoutAssetInput
+  linkedIncomeLines?: Prisma.IncomeLineCreateNestedManyWithoutLinkedAssetInput
+}
+
+export type AssetUncheckedCreateWithoutLinkedLiabilitiesInput = {
+  id?: number
+  name: string
+  value: runtime.Decimal | runtime.DecimalJsLike | number | string
+  bsId: number
+  linkedIncomeLines?: Prisma.IncomeLineUncheckedCreateNestedManyWithoutLinkedAssetInput
+}
+
+export type AssetCreateOrConnectWithoutLinkedLiabilitiesInput = {
+  where: Prisma.AssetWhereUniqueInput
+  create: Prisma.XOR<Prisma.AssetCreateWithoutLinkedLiabilitiesInput, Prisma.AssetUncheckedCreateWithoutLinkedLiabilitiesInput>
+}
+
+export type AssetUpsertWithoutLinkedLiabilitiesInput = {
+  update: Prisma.XOR<Prisma.AssetUpdateWithoutLinkedLiabilitiesInput, Prisma.AssetUncheckedUpdateWithoutLinkedLiabilitiesInput>
+  create: Prisma.XOR<Prisma.AssetCreateWithoutLinkedLiabilitiesInput, Prisma.AssetUncheckedCreateWithoutLinkedLiabilitiesInput>
+  where?: Prisma.AssetWhereInput
+}
+
+export type AssetUpdateToOneWithWhereWithoutLinkedLiabilitiesInput = {
+  where?: Prisma.AssetWhereInput
+  data: Prisma.XOR<Prisma.AssetUpdateWithoutLinkedLiabilitiesInput, Prisma.AssetUncheckedUpdateWithoutLinkedLiabilitiesInput>
+}
+
+export type AssetUpdateWithoutLinkedLiabilitiesInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  BalanceSheet?: Prisma.BalanceSheetUpdateOneRequiredWithoutAssetNestedInput
+  linkedIncomeLines?: Prisma.IncomeLineUpdateManyWithoutLinkedAssetNestedInput
+}
+
+export type AssetUncheckedUpdateWithoutLinkedLiabilitiesInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  bsId?: Prisma.IntFieldUpdateOperationsInput | number
+  linkedIncomeLines?: Prisma.IncomeLineUncheckedUpdateManyWithoutLinkedAssetNestedInput
+}
+
 export type AssetCreateWithoutBalanceSheetInput = {
   name: string
   value: runtime.Decimal | runtime.DecimalJsLike | number | string
+  linkedIncomeLines?: Prisma.IncomeLineCreateNestedManyWithoutLinkedAssetInput
+  linkedLiabilities?: Prisma.LiabilityCreateNestedManyWithoutLinkedAssetInput
 }
 
 export type AssetUncheckedCreateWithoutBalanceSheetInput = {
   id?: number
   name: string
   value: runtime.Decimal | runtime.DecimalJsLike | number | string
+  linkedIncomeLines?: Prisma.IncomeLineUncheckedCreateNestedManyWithoutLinkedAssetInput
+  linkedLiabilities?: Prisma.LiabilityUncheckedCreateNestedManyWithoutLinkedAssetInput
 }
 
 export type AssetCreateOrConnectWithoutBalanceSheetInput = {
@@ -437,6 +538,52 @@ export type AssetScalarWhereInput = {
   bsId?: Prisma.IntFilter<"Asset"> | number
 }
 
+export type AssetCreateWithoutLinkedIncomeLinesInput = {
+  name: string
+  value: runtime.Decimal | runtime.DecimalJsLike | number | string
+  BalanceSheet: Prisma.BalanceSheetCreateNestedOneWithoutAssetInput
+  linkedLiabilities?: Prisma.LiabilityCreateNestedManyWithoutLinkedAssetInput
+}
+
+export type AssetUncheckedCreateWithoutLinkedIncomeLinesInput = {
+  id?: number
+  name: string
+  value: runtime.Decimal | runtime.DecimalJsLike | number | string
+  bsId: number
+  linkedLiabilities?: Prisma.LiabilityUncheckedCreateNestedManyWithoutLinkedAssetInput
+}
+
+export type AssetCreateOrConnectWithoutLinkedIncomeLinesInput = {
+  where: Prisma.AssetWhereUniqueInput
+  create: Prisma.XOR<Prisma.AssetCreateWithoutLinkedIncomeLinesInput, Prisma.AssetUncheckedCreateWithoutLinkedIncomeLinesInput>
+}
+
+export type AssetUpsertWithoutLinkedIncomeLinesInput = {
+  update: Prisma.XOR<Prisma.AssetUpdateWithoutLinkedIncomeLinesInput, Prisma.AssetUncheckedUpdateWithoutLinkedIncomeLinesInput>
+  create: Prisma.XOR<Prisma.AssetCreateWithoutLinkedIncomeLinesInput, Prisma.AssetUncheckedCreateWithoutLinkedIncomeLinesInput>
+  where?: Prisma.AssetWhereInput
+}
+
+export type AssetUpdateToOneWithWhereWithoutLinkedIncomeLinesInput = {
+  where?: Prisma.AssetWhereInput
+  data: Prisma.XOR<Prisma.AssetUpdateWithoutLinkedIncomeLinesInput, Prisma.AssetUncheckedUpdateWithoutLinkedIncomeLinesInput>
+}
+
+export type AssetUpdateWithoutLinkedIncomeLinesInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  BalanceSheet?: Prisma.BalanceSheetUpdateOneRequiredWithoutAssetNestedInput
+  linkedLiabilities?: Prisma.LiabilityUpdateManyWithoutLinkedAssetNestedInput
+}
+
+export type AssetUncheckedUpdateWithoutLinkedIncomeLinesInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  bsId?: Prisma.IntFieldUpdateOperationsInput | number
+  linkedLiabilities?: Prisma.LiabilityUncheckedUpdateManyWithoutLinkedAssetNestedInput
+}
+
 export type AssetCreateManyBalanceSheetInput = {
   id?: number
   name: string
@@ -446,12 +593,16 @@ export type AssetCreateManyBalanceSheetInput = {
 export type AssetUpdateWithoutBalanceSheetInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  linkedIncomeLines?: Prisma.IncomeLineUpdateManyWithoutLinkedAssetNestedInput
+  linkedLiabilities?: Prisma.LiabilityUpdateManyWithoutLinkedAssetNestedInput
 }
 
 export type AssetUncheckedUpdateWithoutBalanceSheetInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  linkedIncomeLines?: Prisma.IncomeLineUncheckedUpdateManyWithoutLinkedAssetNestedInput
+  linkedLiabilities?: Prisma.LiabilityUncheckedUpdateManyWithoutLinkedAssetNestedInput
 }
 
 export type AssetUncheckedUpdateManyWithoutBalanceSheetInput = {
@@ -461,6 +612,44 @@ export type AssetUncheckedUpdateManyWithoutBalanceSheetInput = {
 }
 
 
+/**
+ * Count Type AssetCountOutputType
+ */
+
+export type AssetCountOutputType = {
+  linkedIncomeLines: number
+  linkedLiabilities: number
+}
+
+export type AssetCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  linkedIncomeLines?: boolean | AssetCountOutputTypeCountLinkedIncomeLinesArgs
+  linkedLiabilities?: boolean | AssetCountOutputTypeCountLinkedLiabilitiesArgs
+}
+
+/**
+ * AssetCountOutputType without action
+ */
+export type AssetCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AssetCountOutputType
+   */
+  select?: Prisma.AssetCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * AssetCountOutputType without action
+ */
+export type AssetCountOutputTypeCountLinkedIncomeLinesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.IncomeLineWhereInput
+}
+
+/**
+ * AssetCountOutputType without action
+ */
+export type AssetCountOutputTypeCountLinkedLiabilitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.LiabilityWhereInput
+}
+
 
 export type AssetSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -468,6 +657,9 @@ export type AssetSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   value?: boolean
   bsId?: boolean
   BalanceSheet?: boolean | Prisma.BalanceSheetDefaultArgs<ExtArgs>
+  linkedIncomeLines?: boolean | Prisma.Asset$linkedIncomeLinesArgs<ExtArgs>
+  linkedLiabilities?: boolean | Prisma.Asset$linkedLiabilitiesArgs<ExtArgs>
+  _count?: boolean | Prisma.AssetCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["asset"]>
 
 export type AssetSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -496,6 +688,9 @@ export type AssetSelectScalar = {
 export type AssetOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "value" | "bsId", ExtArgs["result"]["asset"]>
 export type AssetInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   BalanceSheet?: boolean | Prisma.BalanceSheetDefaultArgs<ExtArgs>
+  linkedIncomeLines?: boolean | Prisma.Asset$linkedIncomeLinesArgs<ExtArgs>
+  linkedLiabilities?: boolean | Prisma.Asset$linkedLiabilitiesArgs<ExtArgs>
+  _count?: boolean | Prisma.AssetCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type AssetIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   BalanceSheet?: boolean | Prisma.BalanceSheetDefaultArgs<ExtArgs>
@@ -508,6 +703,8 @@ export type $AssetPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   name: "Asset"
   objects: {
     BalanceSheet: Prisma.$BalanceSheetPayload<ExtArgs>
+    linkedIncomeLines: Prisma.$IncomeLinePayload<ExtArgs>[]
+    linkedLiabilities: Prisma.$LiabilityPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -909,6 +1106,8 @@ readonly fields: AssetFieldRefs;
 export interface Prisma__AssetClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   BalanceSheet<T extends Prisma.BalanceSheetDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BalanceSheetDefaultArgs<ExtArgs>>): Prisma.Prisma__BalanceSheetClient<runtime.Types.Result.GetResult<Prisma.$BalanceSheetPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  linkedIncomeLines<T extends Prisma.Asset$linkedIncomeLinesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Asset$linkedIncomeLinesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$IncomeLinePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  linkedLiabilities<T extends Prisma.Asset$linkedLiabilitiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Asset$linkedLiabilitiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LiabilityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1335,6 +1534,54 @@ export type AssetDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * Limit how many Assets to delete.
    */
   limit?: number
+}
+
+/**
+ * Asset.linkedIncomeLines
+ */
+export type Asset$linkedIncomeLinesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the IncomeLine
+   */
+  select?: Prisma.IncomeLineSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the IncomeLine
+   */
+  omit?: Prisma.IncomeLineOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.IncomeLineInclude<ExtArgs> | null
+  where?: Prisma.IncomeLineWhereInput
+  orderBy?: Prisma.IncomeLineOrderByWithRelationInput | Prisma.IncomeLineOrderByWithRelationInput[]
+  cursor?: Prisma.IncomeLineWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.IncomeLineScalarFieldEnum | Prisma.IncomeLineScalarFieldEnum[]
+}
+
+/**
+ * Asset.linkedLiabilities
+ */
+export type Asset$linkedLiabilitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Liability
+   */
+  select?: Prisma.LiabilitySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Liability
+   */
+  omit?: Prisma.LiabilityOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.LiabilityInclude<ExtArgs> | null
+  where?: Prisma.LiabilityWhereInput
+  orderBy?: Prisma.LiabilityOrderByWithRelationInput | Prisma.LiabilityOrderByWithRelationInput[]
+  cursor?: Prisma.LiabilityWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.LiabilityScalarFieldEnum | Prisma.LiabilityScalarFieldEnum[]
 }
 
 /**

@@ -7,12 +7,19 @@ datasource db {
   provider = "postgresql"
 }
 
+// Subscription Tier Enum for True Yield Engine access control
+enum SubscriptionTier {
+  FREE
+  PRO
+}
+
 model User {
   id                  Int                 @id @default(autoincrement())
   name                String              @unique
   email               String              @unique
   password            String
   isAdmin             Boolean             @default(false)
+  subscriptionTier    SubscriptionTier    @default(FREE)
   preferredCurrencyId Int                 @default(1)
   createdAt           DateTime            @default(now())
   updatedAt           DateTime
@@ -50,6 +57,9 @@ model Asset {
   value        Decimal @db.Decimal(15, 2)
   bsId         Int
   BalanceSheet BalanceSheet @relation(fields: [bsId], references: [id], onDelete: Cascade)
+  // True Yield Engine: Assets can have linked income streams and liabilities
+  linkedIncomeLines IncomeLine[]
+  linkedLiabilities Liability[]
 }
 
 model Liability {
@@ -57,7 +67,10 @@ model Liability {
   name         String
   value        Decimal @db.Decimal(15, 2)
   bsId         Int
+  // True Yield Engine: Optional link to an asset (e.g., mortgage linked to rental property)
+  assetId      Int?
   BalanceSheet BalanceSheet @relation(fields: [bsId], references: [id], onDelete: Cascade)
+  LinkedAsset  Asset?       @relation(fields: [assetId], references: [id], onDelete: SetNull)
 }
 
 model BalanceSheet {
@@ -75,7 +88,10 @@ model IncomeLine {
   type            String
   isId            Int
   quadrant        String?
+  // True Yield Engine: Optional link to an asset (e.g., rent income linked to rental property)
+  assetId         Int?
   IncomeStatement IncomeStatement @relation(fields: [isId], references: [id], onDelete: Cascade)
+  LinkedAsset     Asset?          @relation(fields: [assetId], references: [id], onDelete: SetNull)
 }
 
 model IncomeStatement {

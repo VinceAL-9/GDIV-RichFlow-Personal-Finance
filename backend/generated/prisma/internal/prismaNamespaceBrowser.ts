@@ -87,6 +87,7 @@ export const UserScalarFieldEnum = {
   email: 'email',
   password: 'password',
   isAdmin: 'isAdmin',
+  subscriptionTier: 'subscriptionTier',
   preferredCurrencyId: 'preferredCurrencyId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -132,7 +133,8 @@ export const LiabilityScalarFieldEnum = {
   id: 'id',
   name: 'name',
   value: 'value',
-  bsId: 'bsId'
+  bsId: 'bsId',
+  assetId: 'assetId'
 } as const
 
 export type LiabilityScalarFieldEnum = (typeof LiabilityScalarFieldEnum)[keyof typeof LiabilityScalarFieldEnum]
@@ -152,7 +154,8 @@ export const IncomeLineScalarFieldEnum = {
   amount: 'amount',
   type: 'type',
   isId: 'isId',
-  quadrant: 'quadrant'
+  quadrant: 'quadrant',
+  assetId: 'assetId'
 } as const
 
 export type IncomeLineScalarFieldEnum = (typeof IncomeLineScalarFieldEnum)[keyof typeof IncomeLineScalarFieldEnum]
