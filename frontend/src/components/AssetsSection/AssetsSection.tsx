@@ -32,7 +32,7 @@ const AssetsSection: React.FC = () => {
   const [showYieldCard, setShowYieldCard] = useState<number | null>(null);
 
   // Query for selected asset's yield data
-  const { data: selectedAssetYield } = useAssetYieldQuery(
+  const { data: selectedAssetYield, error: yieldError, isLoading: yieldLoading } = useAssetYieldQuery(
     showYieldCard ?? 0,
     showYieldCard !== null
   );
@@ -201,15 +201,38 @@ const AssetsSection: React.FC = () => {
       />
 
       {/* True Yield Card for selected asset */}
-      {showYieldCard !== null && selectedAssetYield && (
+      {showYieldCard !== null && (
         <div className="mt-4">
-          <TrueYieldCard 
-            data={selectedAssetYield}
-            onUpgrade={() => {
-              // Handle upgrade navigation
-              console.log('Navigate to upgrade page');
-            }}
-          />
+          {yieldLoading && (
+            <div className="rf-card p-4 text-center">
+              <div className="animate-pulse text-[#d4af37]">Loading yield analysis...</div>
+            </div>
+          )}
+          {yieldError && (
+            <div className="rf-card p-4">
+              <div className="text-red-400 text-center mb-2">
+                Failed to load yield analysis
+              </div>
+              <div className="text-gray-500 text-sm text-center">
+                {yieldError instanceof Error ? yieldError.message : 'An error occurred'}
+              </div>
+              <button
+                onClick={() => setShowYieldCard(null)}
+                className="mt-3 w-full py-2 text-gray-400 hover:text-white transition-colors text-sm"
+              >
+                Close
+              </button>
+            </div>
+          )}
+          {selectedAssetYield && !yieldError && (
+            <TrueYieldCard 
+              data={selectedAssetYield}
+              onUpgrade={() => {
+                // Handle upgrade navigation
+                console.log('Navigate to upgrade page');
+              }}
+            />
+          )}
         </div>
       )}
 

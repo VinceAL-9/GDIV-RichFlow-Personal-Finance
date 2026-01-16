@@ -63,7 +63,21 @@ const computeValueChange = (
       ? parseNum(obj.amount)
       : typeof obj.value === 'number' || typeof obj.value === 'string'
         ? parseNum(obj.value)
-        : 0);
+        : typeof obj.incomeLineAmount === 'number' || typeof obj.incomeLineAmount === 'string'
+          ? parseNum(obj.incomeLineAmount)
+          : typeof obj.liabilityValue === 'number' || typeof obj.liabilityValue === 'string'
+            ? parseNum(obj.liabilityValue)
+            : 0);
+
+  // LINK/UNLINK events - show the linked amount
+  if (at === 'LINK') {
+    const v = pick(afterValue);
+    return Math.abs(v); // Positive to show linked value
+  }
+  if (at === 'UNLINK') {
+    const v = pick(beforeValue);
+    return -Math.abs(v); // Negative to show unlinked value
+  }
 
   if (at === 'DELETE') {
     const v = pick(beforeValue);
@@ -214,21 +228,41 @@ const EventLog: React.FC = () => {
 
         let desc = '';
         const name = (afterValue?.name || beforeValue?.name || '').toString();
-        const prefix = ev.actionType === 'DELETE' ? 'Removed' : ev.actionType === 'UPDATE' ? 'Updated' : 'Created';
-        switch ((ev.entityType || '').toUpperCase()) {
-          case 'INCOME': desc = `${prefix}: Income${name ? ' - ' + name : ''}`; break;
-          case 'EXPENSE': desc = `${prefix}: Expense${name ? ' - ' + name : ''}`; break;
-          case 'ASSET': desc = `${prefix}: Asset${name ? ' - ' + name : ''}`; break;
-          case 'LIABILITY': desc = `${prefix}: Liability${name ? ' - ' + name : ''}`; break;
-          case 'CASH_SAVINGS': desc = `${prefix}: Cash Savings`; break;
-          case 'USER':
-            if (ev.actionType === 'UPDATE' && afterValue?.currencyCode) {
-              desc = `Currency Changed: ${beforeValue?.currencyCode || '?'} → ${afterValue.currencyCode}`;
-            } else {
-              desc = `Account Created`;
-            }
-            break;
-          default: desc = `${prefix}: ${ev.entityType}`;
+        const actionUpper = (ev.actionType || '').toUpperCase();
+        const entityUpper = (ev.entityType || '').toUpperCase();
+
+        // Handle LINK/UNLINK events specially
+        if (actionUpper === 'LINK' || actionUpper === 'UNLINK') {
+          const linkPrefix = actionUpper === 'LINK' ? 'Linked' : 'Unlinked';
+          const assetName = afterValue?.assetName || beforeValue?.assetName || 'Asset';
+          const entitySubtype = (ev.entitySubtype || afterValue?.entitySubtype || '').toUpperCase();
+          
+          if (entitySubtype === 'INCOME_LINK' || afterValue?.incomeLineName) {
+            const incomeName = afterValue?.incomeLineName || beforeValue?.incomeLineName || 'Income';
+            desc = `${linkPrefix}: "${incomeName}" ${actionUpper === 'LINK' ? 'to' : 'from'} "${assetName}"`;
+          } else if (entitySubtype === 'LIABILITY_LINK' || afterValue?.liabilityName) {
+            const liabilityName = afterValue?.liabilityName || beforeValue?.liabilityName || 'Liability';
+            desc = `${linkPrefix}: "${liabilityName}" ${actionUpper === 'LINK' ? 'to' : 'from'} "${assetName}"`;
+          } else {
+            desc = `${linkPrefix}: Item ${actionUpper === 'LINK' ? 'to' : 'from'} "${assetName}"`;
+          }
+        } else {
+          const prefix = actionUpper === 'DELETE' ? 'Removed' : actionUpper === 'UPDATE' ? 'Updated' : 'Created';
+          switch (entityUpper) {
+            case 'INCOME': desc = `${prefix}: Income${name ? ' - ' + name : ''}`; break;
+            case 'EXPENSE': desc = `${prefix}: Expense${name ? ' - ' + name : ''}`; break;
+            case 'ASSET': desc = `${prefix}: Asset${name ? ' - ' + name : ''}`; break;
+            case 'LIABILITY': desc = `${prefix}: Liability${name ? ' - ' + name : ''}`; break;
+            case 'CASH_SAVINGS': desc = `${prefix}: Cash Savings`; break;
+            case 'USER':
+              if (actionUpper === 'UPDATE' && afterValue?.currencyCode) {
+                desc = `Currency Changed: ${beforeValue?.currencyCode || '?'} → ${afterValue.currencyCode}`;
+              } else {
+                desc = `Account Created`;
+              }
+              break;
+            default: desc = `${prefix}: ${ev.entityType}`;
+          }
         }
 
         // Determine historical currency symbol

@@ -150,7 +150,7 @@ export async function getAssetPerformance(
   });
 
   if (!user) {
-    throw new Error('User not found');
+    throw new Error(`User not found (userId: ${userId})`);
   }
 
   // 2. Get asset with linked income lines and liabilities
@@ -160,7 +160,7 @@ export async function getAssetPerformance(
   });
 
   if (!balanceSheet) {
-    throw new Error('Balance sheet not found');
+    throw new Error(`Balance sheet not found for user (userId: ${userId}). User may need to create a balance sheet first.`);
   }
 
   const asset = await prisma.asset.findFirst({
@@ -175,7 +175,12 @@ export async function getAssetPerformance(
   });
 
   if (!asset) {
-    throw new Error('Asset not found or does not belong to user');
+    // Debug: Check if asset exists at all
+    const assetExists = await prisma.asset.findUnique({ where: { id: assetId } });
+    if (!assetExists) {
+      throw new Error(`Asset not found (assetId: ${assetId})`);
+    }
+    throw new Error(`Asset ${assetId} does not belong to user ${userId} (asset bsId: ${assetExists.bsId}, user bsId: ${balanceSheet.id})`);
   }
 
   // 3. Build linked items response (always visible)
@@ -299,7 +304,7 @@ export async function linkIncomeToAsset(
     });
 
     if (!balanceSheet) {
-      throw new Error('Balance sheet not found');
+      throw new Error(`Balance sheet not found for user (userId: ${userId})`);
     }
 
     const asset = await tx.asset.findFirst({
@@ -310,7 +315,12 @@ export async function linkIncomeToAsset(
     });
 
     if (!asset) {
-      throw new Error('Asset not found or does not belong to user');
+      // Debug: Check if asset exists at all
+      const assetExists = await tx.asset.findUnique({ where: { id: assetId } });
+      if (!assetExists) {
+        throw new Error(`Asset not found (assetId: ${assetId})`);
+      }
+      throw new Error(`Asset ${assetId} does not belong to user ${userId} (asset bsId: ${assetExists.bsId}, user bsId: ${balanceSheet.id})`);
     }
 
     // 2. Verify income line belongs to user

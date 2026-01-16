@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { authAPI, setAccessToken, clearAccessToken, refreshAccessToken } from '../utils/api';
 import { Currency } from '../types/currency.types';
 
@@ -40,6 +41,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   // On mount, try to restore session using refresh token cookie
   useEffect(() => {
@@ -65,6 +67,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const login = async (email: string, password: string) => {
+    // Clear any cached data from previous user before logging in
+    queryClient.clear();
+    
     const data = await authAPI.login(email, password);
     // User data includes preferredCurrency from backend
     setUser(data.user);
@@ -73,6 +78,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     await authAPI.logout();
     setUser(null);
+    // Clear all cached queries to prevent data leakage between users
+    queryClient.clear();
   };
 
   const updateUsername = async (newName: string) => {

@@ -38,12 +38,12 @@ export async function createEvent(
       entityId
     } = params;
 
-    // Validate payloads against Zod schemas
+    // Validate payloads against Zod schemas (pass actionType for LINK/UNLINK)
     if (beforeValue !== null && beforeValue !== undefined) {
-      validateEventPayload(entityType, beforeValue);
+      validateEventPayload(entityType, beforeValue, actionType as ActionType);
     }
     if (afterValue !== null && afterValue !== undefined) {
-      validateEventPayload(entityType, afterValue);
+      validateEventPayload(entityType, afterValue, actionType as ActionType);
     }
 
     const event = await db.event.create({
