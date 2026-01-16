@@ -181,112 +181,78 @@ const AssetsSection: React.FC = () => {
   const assetData = assets ?? [];
 
   return (
-    <div className="rf-card text-white">
-      <div className="rf-section-header">Assets</div>
+    <>
+      <div className="rf-card text-white">
+        <div className="rf-section-header">Assets</div>
 
-      {displayError && <p className="rf-error">{displayError}</p>}
+        {displayError && <p className="rf-error">{displayError}</p>}
 
-      {/* Use FinancialTable for the list display */}
-      <FinancialTable
-        title=""
-        data={assetData}
-        columns={columns}
-        emptyMessage="No assets added yet."
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        editingId={editingItem?.id ?? null}
-        deletingId={deletingId ?? null}
-        noCard={true}
-        renderRowActions={renderRowActions}
-      />
+        {/* Use FinancialTable for the list display */}
+        <FinancialTable
+          title=""
+          data={assetData}
+          columns={columns}
+          emptyMessage="No assets added yet."
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          editingId={editingItem?.id ?? null}
+          deletingId={deletingId ?? null}
+          noCard={true}
+          renderRowActions={renderRowActions}
+        />
 
-      {/* True Yield Card for selected asset */}
-      {showYieldCard !== null && (
-        <div className="mt-4">
-          {yieldLoading && (
-            <div className="rf-card p-4 text-center">
-              <div className="animate-pulse text-[#d4af37]">Loading yield analysis...</div>
-            </div>
-          )}
-          {yieldError && (
-            <div className="rf-card p-4">
-              <div className="text-red-400 text-center mb-2">
-                Failed to load yield analysis
-              </div>
-              <div className="text-gray-500 text-sm text-center">
-                {yieldError instanceof Error ? yieldError.message : 'An error occurred'}
-              </div>
+        <form onSubmit={handleSubmit} className="flex flex-wrap gap-3">
+          <input
+            className="rf-input flex-1 min-w-[120px]"
+            type="text"
+            placeholder="Asset name"
+            value={assetName}
+            onChange={(e) => setAssetName(e.target.value)}
+            disabled={addAssetMutation.isPending}
+          />
+          <input
+            className="rf-input flex-1 min-w-[120px]"
+            type="number"
+            placeholder="Total Value"
+            step="0.01"
+            value={assetAmount}
+            onChange={(e) => setAssetAmount(e.target.value)}
+            disabled={addAssetMutation.isPending || updateAssetMutation.isPending}
+          />
+          {editingItem !== null ? (
+            <div className="rf-edit-actions w-full">
               <button
-                onClick={() => setShowYieldCard(null)}
-                className="mt-3 w-full py-2 text-gray-400 hover:text-white transition-colors text-sm"
+                type="button"
+                className="rf-btn-save"
+                onClick={handleUpdateAsset}
+                disabled={updateAssetMutation.isPending || !assetName.trim() || !assetAmount.trim()}
               >
-                Close
+                {updateAssetMutation.isPending && updateAssetMutation.variables?.id === editingItem?.id
+                  ? "Saving..."
+                  : "Save"}
+              </button>
+              <button
+                type="button"
+                className="rf-btn-cancel"
+                onClick={handleCancelEdit}
+                disabled={updateAssetMutation.isPending}
+              >
+                Cancel
               </button>
             </div>
-          )}
-          {selectedAssetYield && !yieldError && (
-            <TrueYieldCard 
-              data={selectedAssetYield}
-              onUpgrade={() => {
-                // Handle upgrade navigation
-                console.log('Navigate to upgrade page');
-              }}
-            />
-          )}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="flex flex-wrap gap-3">
-        <input
-          className="rf-input flex-1 min-w-[120px]"
-          type="text"
-          placeholder="Asset name"
-          value={assetName}
-          onChange={(e) => setAssetName(e.target.value)}
-          disabled={addAssetMutation.isPending}
-        />
-        <input
-          className="rf-input flex-1 min-w-[120px]"
-          type="number"
-          placeholder="Total Value"
-          step="0.01"
-          value={assetAmount}
-          onChange={(e) => setAssetAmount(e.target.value)}
-          disabled={addAssetMutation.isPending || updateAssetMutation.isPending}
-        />
-        {editingItem !== null ? (
-          <div className="rf-edit-actions w-full">
+          ) : (
             <button
-              type="button"
-              className="rf-btn-save"
-              onClick={handleUpdateAsset}
-              disabled={updateAssetMutation.isPending || !assetName.trim() || !assetAmount.trim()}
+              className="rf-btn-primary w-full"
+              type="submit"
+              disabled={addAssetMutation.isPending || !assetName.trim() || !assetAmount.trim()}
             >
-              {updateAssetMutation.isPending && updateAssetMutation.variables?.id === editingItem?.id
-                ? "Saving..."
-                : "Save"}
+              {addAssetMutation.isPending ? "Adding..." : "Add Asset"}
             </button>
-            <button
-              type="button"
-              className="rf-btn-cancel"
-              onClick={handleCancelEdit}
-              disabled={updateAssetMutation.isPending}
-            >
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <button
-            className="rf-btn-primary w-full"
-            type="submit"
-            disabled={addAssetMutation.isPending || !assetName.trim() || !assetAmount.trim()}
-          >
-            {addAssetMutation.isPending ? "Adding..." : "Add Asset"}
-          </button>
-        )}
-      </form>
+          )}
+        </form>
+      </div>
 
-      {/* Asset Linking Modal */}
+      {/* Asset Linking Modal - rendered outside main container */}
       {selectedAssetId !== null && (
         <AssetLinkingModal
           assetId={selectedAssetId}
@@ -298,7 +264,54 @@ const AssetsSection: React.FC = () => {
           }}
         />
       )}
-    </div>
+
+      {/* True Yield Card Modal - rendered outside main container */}
+      {showYieldCard !== null && (
+        <>
+          {yieldLoading && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+              <div className="relative bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] p-6 shadow-2xl">
+                <div className="animate-pulse text-[#d4af37]">Loading yield analysis...</div>
+              </div>
+            </div>
+          )}
+          {yieldError && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div 
+                className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+                onClick={() => setShowYieldCard(null)}
+              />
+              <div className="relative bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] p-6 max-w-sm shadow-2xl">
+                <div className="text-red-400 text-center mb-2 font-medium">
+                  Failed to load yield analysis
+                </div>
+                <div className="text-gray-500 text-sm text-center mb-4">
+                  {yieldError instanceof Error ? yieldError.message : 'An error occurred'}
+                </div>
+                <button
+                  onClick={() => setShowYieldCard(null)}
+                  className="w-full py-2 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-gray-300 rounded-lg transition-colors text-sm"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
+          {selectedAssetYield && !yieldError && !yieldLoading && (
+            <TrueYieldCard 
+              data={selectedAssetYield}
+              isModal={true}
+              onClose={() => setShowYieldCard(null)}
+              onUpgrade={() => {
+                // Handle upgrade navigation
+                console.log('Navigate to upgrade page');
+              }}
+            />
+          )}
+        </>
+      )}
+    </>
   );
 };
 

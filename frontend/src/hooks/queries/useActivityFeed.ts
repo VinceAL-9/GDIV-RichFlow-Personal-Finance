@@ -11,7 +11,7 @@ import { eventLogsAPI } from '../../utils/api';
 // Type Definitions
 // ============================================================================
 
-export type ActionType = 'CREATE' | 'UPDATE' | 'DELETE';
+export type ActionType = 'CREATE' | 'UPDATE' | 'DELETE' | 'LINK' | 'UNLINK';
 
 export type EntityType = 
   | 'INCOME' 
@@ -26,6 +26,13 @@ export interface EventData {
   amount?: number;
   value?: number;
   type?: string;
+  // Link event fields
+  assetName?: string;
+  incomeLineName?: string;
+  liabilityName?: string;
+  incomeLineAmount?: number;
+  liabilityValue?: number;
+  entitySubtype?: string;
   [key: string]: unknown;
 }
 
@@ -100,6 +107,10 @@ const getActionVerb = (actionType: ActionType): string => {
       return 'Updated';
     case 'DELETE':
       return 'Deleted';
+    case 'LINK':
+      return 'Linked';
+    case 'UNLINK':
+      return 'Unlinked';
     default:
       return 'Modified';
   }
@@ -136,9 +147,14 @@ const getEntityLabel = (entityType: EntityType, entitySubtype?: string | null): 
 };
 
 /**
- * Gets the icon for an entity type
+ * Gets the icon for an entity type (optionally considering action type)
  */
-export const getEntityIcon = (entityType: EntityType): string => {
+export const getEntityIcon = (entityType: EntityType, actionType?: ActionType): string => {
+  // Special icon for link/unlink actions
+  if (actionType === 'LINK' || actionType === 'UNLINK') {
+    return '🔗';
+  }
+  
   switch (entityType) {
     case 'INCOME':
       return '💰';
@@ -168,6 +184,10 @@ export const getActionColor = (actionType: ActionType): string => {
       return 'text-yellow-400';
     case 'DELETE':
       return 'text-red-400';
+    case 'LINK':
+      return 'text-purple-400';
+    case 'UNLINK':
+      return 'text-orange-400';
     default:
       return 'text-gray-400';
   }
@@ -179,6 +199,25 @@ export const getActionColor = (actionType: ActionType): string => {
 export const formatEventDescription = (event: ActivityEvent): string => {
   const action = getActionVerb(event.actionType);
   const entityLabel = getEntityLabel(event.entityType, event.entitySubtype);
+  
+  // Handle LINK/UNLINK events specially
+  if (event.actionType === 'LINK' || event.actionType === 'UNLINK') {
+    const data = event.afterValue || event.beforeValue;
+    const assetName = data?.assetName || 'Asset';
+    const entitySubtype = (event.entitySubtype || data?.entitySubtype || '').toUpperCase();
+    
+    if (entitySubtype === 'INCOME_LINK' || data?.incomeLineName) {
+      const incomeName = data?.incomeLineName || 'Income';
+      const preposition = event.actionType === 'LINK' ? 'to' : 'from';
+      return `${action} "${incomeName}" ${preposition} "${assetName}"`;
+    } else if (entitySubtype === 'LIABILITY_LINK' || data?.liabilityName) {
+      const liabilityName = data?.liabilityName || 'Liability';
+      const preposition = event.actionType === 'LINK' ? 'to' : 'from';
+      return `${action} "${liabilityName}" ${preposition} "${assetName}"`;
+    }
+    
+    return `${action} item ${event.actionType === 'LINK' ? 'to' : 'from'} ${assetName}`;
+  }
   
   // Get the name from afterValue (for create/update) or beforeValue (for delete)
   const data = event.actionType === 'DELETE' ? event.beforeValue : event.afterValue;

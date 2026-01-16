@@ -108,7 +108,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
 const ActivityItem: React.FC<{ event: ActivityEvent }> = ({ 
   event
 }) => {
-  const icon = getEntityIcon(event.entityType);
+  const icon = getEntityIcon(event.entityType, event.actionType);
   const actionColorClass = getActionColor(event.actionType);
   const description = formatEventDescription(event);
   const timeAgo = formatRelativeTime(event.timestamp);
