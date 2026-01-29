@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { getFinancialSnapshot, getFinancialTrajectory, createSnapshot } from '../services/analysis.service.js';
+import { getFinancialSnapshot, getFinancialTrajectory, createSnapshot, getAnalysisSnapshot } from '../services/analysis.service.js';
 import {
   getAssetPerformance,
   linkIncomeToAsset,
@@ -10,6 +10,7 @@ import {
   getAvailableIncomeLines,
   getAvailableLiabilities
 } from '../services/trueYield.service.js';
+import { AnalysisResponse } from '../types/analysis.types.js';
 
 export async function getFinancialSnapshotHandler(req: Request, res: Response, next: NextFunction) {
   try {
@@ -27,6 +28,43 @@ export async function getFinancialSnapshotHandler(req: Request, res: Response, n
   } catch (error: any) {
     console.error('Get financial snapshot error:', error);
     return res.status(500).json({ error: error.message || 'Failed to get financial snapshot' });
+  }
+}
+
+/**
+ * GET /api/analysis/tiered-snapshot
+ * Get tiered analysis snapshot with polymorphic response based on subscription
+ * 
+ * Response structure:
+ * - standard: StandardSnapshot (always present)
+ * - advanced: AdvancedMetrics | null (null for FREE tier)
+ * - isPro: boolean
+ * - tier: 'FREE' | 'PRO'
+ */
+export async function getTieredAnalysisSnapshotHandler(
+  req: Request, 
+  res: Response, 
+  next: NextFunction
+): Promise<Response<AnalysisResponse>> {
+  try {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const analysisResponse: AnalysisResponse = await getAnalysisSnapshot(userId);
+
+    return res.status(200).json(analysisResponse);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to get analysis snapshot';
+    console.error('Get tiered analysis snapshot error:', error);
+    
+    if (errorMessage.includes('not found')) {
+      return res.status(404).json({ error: errorMessage });
+    }
+    
+    return res.status(500).json({ error: errorMessage });
   }
 }
 

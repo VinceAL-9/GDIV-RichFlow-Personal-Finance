@@ -4,7 +4,11 @@ import Header from '../../components/Header/Header';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { analysisAPI } from '../../utils/api';
+import { analysisService } from '../../services/analysis.service';
 import { formatCurrency as formatCurrencyValue, getCurrencySymbol } from '../../utils/currency.utils';
+import DebtQualityChart from '../../components/Analysis/DebtQualityChart';
+import AssetEfficiencyChart from '../../components/Analysis/AssetEfficiencyChart';
+import type { AnalysisResponse } from '../../types/analysis.types';
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend,
   AreaChart, Area, LineChart, Line, Bar, XAxis, YAxis, CartesianGrid, ReferenceLine, ComposedChart, ReferenceDot
@@ -170,6 +174,10 @@ const Analysis: React.FC = () => {
   const deferredSelectedDate = useDeferredValue(selectedDate);
   const [snapshotData, setSnapshotData] = useState<SnapshotData | null>(null);
 
+  // Tiered Analysis State (for PRO features)
+  const [tieredData, setTieredData] = useState<AnalysisResponse | null>(null);
+  const [tieredLoading, setTieredLoading] = useState(false);
+
   // Compare state
   const [showCompare, setShowCompare] = useState(false);
   const [compareStart, setCompareStart] = useState('');
@@ -260,13 +268,30 @@ const Analysis: React.FC = () => {
     }
   };
 
+  // Fetch Tiered Snapshot (for PRO metrics)
+  const fetchTieredSnapshot = async (date?: string) => {
+    setTieredLoading(true);
+    try {
+      const data = await analysisService.getTieredSnapshot(date);
+      setTieredData(data);
+    } catch (error) {
+      // Silently fail - tiered data is optional enhancement
+      console.warn('Failed to fetch tiered snapshot:', error);
+      setTieredData(null);
+    } finally {
+      setTieredLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchSnapshot();
+    fetchTieredSnapshot();
   }, [currency]);
 
   useEffect(() => {
     if (deferredSelectedDate) {
       fetchSnapshot(deferredSelectedDate);
+      fetchTieredSnapshot(deferredSelectedDate);
     }
   }, [deferredSelectedDate]);
 
@@ -1218,6 +1243,50 @@ const Analysis: React.FC = () => {
                   accentColor={snapshotData.richFlowMetrics.freedomGap > 0 ? 'default' : 'gold'}
                 />
 
+              </div>
+            )}
+
+            {/* TIERED ANALYSIS SECTION - PRO Features Grid */}
+            {snapshotData && (
+              <div className="max-w-7xl mx-auto mb-6">
+                {/* Section Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#eaca6a]" />
+                    Advanced Analysis
+                  </h2>
+                  {tieredData && !tieredData.isPro && (
+                    <span className="text-xs text-amber-400/70 flex items-center gap-1">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clipRule="evenodd" />
+                      </svg>
+                      Upgrade to unlock
+                    </span>
+                  )}
+                </div>
+
+                {/* Tiered Charts Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Col 1: Debt Quality Chart */}
+                  <DebtQualityChart
+                    data={tieredData?.advanced ?? null}
+                    isPro={tieredData?.isPro ?? false}
+                    onUpgrade={() => {
+                      // TODO: Implement upgrade navigation
+                      console.log('Navigate to upgrade page');
+                    }}
+                  />
+
+                  {/* Col 2: Asset Efficiency Chart */}
+                  <AssetEfficiencyChart
+                    data={tieredData?.advanced ?? null}
+                    isPro={tieredData?.isPro ?? false}
+                    onUpgrade={() => {
+                      // TODO: Implement upgrade navigation
+                      console.log('Navigate to upgrade page');
+                    }}
+                  />
+                </div>
               </div>
             )}
 

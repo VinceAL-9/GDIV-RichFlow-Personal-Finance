@@ -4,6 +4,7 @@ import {
   getFinancialSnapshotHandler,
   getFinancialTrajectoryHandler,
   createSnapshotHandler,
+  getTieredAnalysisSnapshotHandler,
   getAssetYieldHandler,
   getAssetsYieldSummaryHandler,
   linkIncomeToAssetHandler,
@@ -22,6 +23,14 @@ const router = Router();
  * @access Private
  */
 router.get('/snapshot', authenticateToken, getFinancialSnapshotHandler);
+
+/**
+ * @route GET /api/analysis/tiered-snapshot
+ * @desc Get tiered analysis snapshot with polymorphic response based on subscription tier
+ * @access Private
+ * @returns {AnalysisResponse} - standard (all tiers) + advanced (PRO only) + isPro + tier
+ */
+router.get('/tiered-snapshot', authenticateToken, getTieredAnalysisSnapshotHandler);
 
 /**
  * @route GET /api/analysis/trajectory

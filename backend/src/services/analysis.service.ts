@@ -762,3 +762,282 @@ export const getFinancialTrajectory = async (
 
   return trajectoryPoints;
 };
+
+// ============================================================================
+// Tiered Analysis Engine - Polymorphic Response Based on Subscription
+// ============================================================================
+
+import {
+  AnalysisResponse,
+  StandardSnapshot,
+  AdvancedMetrics,
+  DebtComposition,
+  AssetEfficiency,
+  AssetBreakdownItem,
+  AssetWithRelations,
+  LiabilityWithAssetLink
+} from '../types/analysis.types.js';
+
+/**
+ * Get analysis snapshot with tier-based response
+ * 
+ * This function performs a "Topological Sort" of financial data:
+ * 1. Fetch assets with their linked income lines and liabilities
+ * 2. Classify debt (Good vs Bad) and assets (Productive vs Stagnant)
+ * 3. Gate advanced metrics based on subscription tier
+ * 
+ * @param userId - The user's ID
+ * @returns AnalysisResponse with standard data for all, advanced for PRO only
+ */
+export async function getAnalysisSnapshot(userId: number): Promise<AnalysisResponse> {
+  // Step 1: Fetch user with subscription tier and preferred currency
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { PreferredCurrency: true }
+  });
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const isPro = user.subscriptionTier === 'PRO';
+  const currency = {
+    symbol: user.PreferredCurrency?.cur_symbol || '$',
+    name: user.PreferredCurrency?.cur_name || 'USD'
+  };
+
+  // Step 2: Fetch balance sheet with assets including their linked items
+  const balanceSheet = await prisma.balanceSheet.findFirst({
+    where: { userId },
+    include: {
+      Asset: {
+        include: {
+          linkedIncomeLines: true,
+          linkedLiabilities: true
+        }
+      },
+      Liability: true
+    }
+  });
+
+  // Step 3: Fetch cash savings
+  const cashSavings = await prisma.cashSavings.findFirst({
+    where: { userId }
+  });
+
+  // Step 4: Fetch income statement for passive income calculation
+  const incomeStatement = await prisma.incomeStatement.findFirst({
+    where: { userId },
+    include: {
+      IncomeLine: true,
+      Expense: true
+    }
+  });
+
+  // Extract data with proper typing
+  const assets: AssetWithRelations[] = (balanceSheet?.Asset || []).map((asset: {
+    id: number;
+    name: string;
+    value: unknown;
+    linkedIncomeLines: Array<{ id: number; name: string; amount: unknown; type: string }>;
+    linkedLiabilities: Array<{ id: number; name: string; value: unknown }>;
+  }) => ({
+    id: asset.id,
+    name: asset.name,
+    value: Number(asset.value),
+    linkedIncomeLines: asset.linkedIncomeLines.map((il: { id: number; name: string; amount: unknown; type: string }) => ({
+      id: il.id,
+      name: il.name,
+      amount: Number(il.amount),
+      type: il.type
+    })),
+    linkedLiabilities: asset.linkedLiabilities.map((ll: { id: number; name: string; value: unknown }) => ({
+      id: ll.id,
+      name: ll.name,
+      value: Number(ll.value)
+    }))
+  }));
+
+  const liabilities: LiabilityWithAssetLink[] = (balanceSheet?.Liability || []).map((liability: {
+    id: number;
+    name: string;
+    value: unknown;
+    assetId: number | null;
+  }) => ({
+    id: liability.id,
+    name: liability.name,
+    value: Number(liability.value),
+    assetId: liability.assetId
+  }));
+
+  const totalCash = Number(cashSavings?.amount) || 0;
+
+  // ========================================================================
+  // CLASSIFICATION LOGIC (Topological Sort)
+  // ========================================================================
+
+  // Calculate totals
+  const totalAssets = assets.reduce((sum, asset) => sum + asset.value, 0);
+  const totalLiabilities = liabilities.reduce((sum, liability) => sum + liability.value, 0);
+  const netWorth = totalAssets - totalLiabilities + totalCash;
+
+  // Build StandardSnapshot (available to all tiers)
+  const standard: StandardSnapshot = {
+    totalAssets,
+    totalLiabilities,
+    netWorth,
+    totalCash,
+    currency,
+    asOfDate: new Date().toISOString().split('T')[0]!
+  };
+
+  // ========================================================================
+  // TIER GATE: FREE users get standard only, PRO users get advanced metrics
+  // ========================================================================
+
+  if (!isPro) {
+    return {
+      standard,
+      advanced: null,
+      isPro: false,
+      tier: 'FREE'
+    };
+  }
+
+  // ========================================================================
+  // PRO-ONLY: Advanced Metrics Calculation
+  // ========================================================================
+
+  // --- Debt Classification ---
+  // Good Debt: Liability where assetId is NOT null (tied to income-producing asset)
+  // Bad Debt: Liability where assetId IS null (consumer debt)
+  const goodDebt = liabilities
+    .filter(l => l.assetId !== null)
+    .reduce((sum, l) => sum + l.value, 0);
+  
+  const badDebt = liabilities
+    .filter(l => l.assetId === null)
+    .reduce((sum, l) => sum + l.value, 0);
+
+  const debtComposition: DebtComposition = {
+    goodDebt,
+    badDebt,
+    goodDebtRatio: totalLiabilities > 0 ? (goodDebt / totalLiabilities) * 100 : 0,
+    badDebtRatio: totalLiabilities > 0 ? (badDebt / totalLiabilities) * 100 : 0
+  };
+
+  // --- Asset Classification ---
+  // Productive Asset: Asset where incomeLines.length > 0
+  // Stagnant Asset: Asset where incomeLines.length === 0
+  const productiveAssets = assets.filter(a => a.linkedIncomeLines.length > 0);
+  const stagnantAssets = assets.filter(a => a.linkedIncomeLines.length === 0);
+
+  const productiveAssetsValue = productiveAssets.reduce((sum, a) => sum + a.value, 0);
+  const stagnantAssetsValue = stagnantAssets.reduce((sum, a) => sum + a.value, 0);
+
+  const assetEfficiency: AssetEfficiency = {
+    productiveAssets: productiveAssetsValue,
+    stagnantAssets: stagnantAssetsValue,
+    productiveAssetCount: productiveAssets.length,
+    stagnantAssetCount: stagnantAssets.length,
+    productivityRatio: totalAssets > 0 ? (productiveAssetsValue / totalAssets) * 100 : 0
+  };
+
+  // --- Advanced Metrics Calculation ---
+  
+  // Calculate income totals
+  const incomeLines = incomeStatement?.IncomeLine || [];
+  const expenses = incomeStatement?.Expense || [];
+  
+  const totalMonthlyIncome = incomeLines.reduce((sum: number, i: { amount: unknown }) => sum + Number(i.amount), 0);
+  const totalMonthlyExpenses = expenses.reduce((sum: number, e: { amount: unknown }) => sum + Number(e.amount), 0);
+  
+  const passiveIncome = incomeLines
+    .filter((i: { type: string }) => i.type.toUpperCase() === 'PASSIVE')
+    .reduce((sum: number, i: { amount: unknown }) => sum + Number(i.amount), 0);
+  
+  const portfolioIncome = incomeLines
+    .filter((i: { type: string }) => i.type.toUpperCase() === 'PORTFOLIO')
+    .reduce((sum: number, i: { amount: unknown }) => sum + Number(i.amount), 0);
+  
+  const combinedPassiveIncome = passiveIncome + portfolioIncome;
+
+  // Debt Service Ratio = Total Liabilities / Total Monthly Income
+  // (Simplified: using total liability value as proxy for monthly debt service)
+  // In a more sophisticated system, this would use actual monthly payment amounts
+  const debtServiceRatio = totalMonthlyIncome > 0 
+    ? (totalLiabilities * 0.01) / totalMonthlyIncome  // Assume ~1% of debt as monthly service
+    : 0;
+
+  // Passive Runway = Cash / (Monthly Expenses - Monthly Passive Income)
+  // Returns Infinity if passive income >= expenses (financially free)
+  const monthlyGap = totalMonthlyExpenses - combinedPassiveIncome;
+  const passiveRunway = monthlyGap <= 0 
+    ? Infinity  // Financially free - passive income covers expenses
+    : totalCash / monthlyGap;
+
+  // Passive Income Crossover Date Estimation
+  // Based on current trajectory, estimate when passive income will equal expenses
+  let passiveIncomeCrossoverDate: string | null = null;
+  
+  if (combinedPassiveIncome >= totalMonthlyExpenses) {
+    // Already achieved financial freedom
+    passiveIncomeCrossoverDate = null; // Already crossed over
+  } else if (combinedPassiveIncome > 0 && productiveAssetsValue > 0) {
+    // Estimate based on historical growth (simplified: assume 10% annual passive income growth)
+    const monthlyGrowthRate = 0.10 / 12; // 10% annual = ~0.83% monthly
+    const monthsToFreedom = monthlyGap > 0 && monthlyGrowthRate > 0
+      ? Math.log(totalMonthlyExpenses / combinedPassiveIncome) / Math.log(1 + monthlyGrowthRate)
+      : null;
+    
+    if (monthsToFreedom !== null && monthsToFreedom > 0 && monthsToFreedom < 600) { // Cap at 50 years
+      const crossoverDate = new Date();
+      crossoverDate.setMonth(crossoverDate.getMonth() + Math.ceil(monthsToFreedom));
+      passiveIncomeCrossoverDate = crossoverDate.toISOString().split('T')[0]!;
+    }
+  }
+
+  // --- Asset Breakdown with True Yield ---
+  const assetBreakdown: AssetBreakdownItem[] = assets.map(asset => {
+    const linkedIncomeTotal = asset.linkedIncomeLines.reduce((sum, il) => sum + il.amount, 0);
+    const linkedLiabilityTotal = asset.linkedLiabilities.reduce((sum, ll) => sum + ll.value, 0);
+    
+    // True Yield = (Annual Income - Annual Debt Service) / Asset Value * 100
+    // Simplified: assume liability value * 5% as annual debt service cost
+    const annualIncome = linkedIncomeTotal * 12;
+    const annualDebtService = linkedLiabilityTotal * 0.05;
+    const trueYield = asset.value > 0 
+      ? ((annualIncome - annualDebtService) / asset.value) * 100 
+      : 0;
+
+    return {
+      assetId: asset.id,
+      assetName: asset.name,
+      assetValue: asset.value,
+      isProductive: asset.linkedIncomeLines.length > 0,
+      linkedIncomeTotal,
+      linkedIncomeCount: asset.linkedIncomeLines.length,
+      linkedLiabilityTotal,
+      linkedLiabilityCount: asset.linkedLiabilities.length,
+      trueYield
+    };
+  });
+
+  const advanced: AdvancedMetrics = {
+    debtComposition,
+    assetEfficiency,
+    metrics: {
+      debtServiceRatio,
+      passiveRunway,
+      passiveIncomeCrossoverDate
+    },
+    assetBreakdown
+  };
+
+  return {
+    standard,
+    advanced,
+    isPro: true,
+    tier: 'PRO'
+  };
+}
